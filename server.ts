@@ -15,9 +15,10 @@ const PORT = 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'quickoffice-secret-key';
 
 // PostgreSQL Connection
-console.log('Connecting to database at:', process.env.DATABASE_URL ? process.env.DATABASE_URL.replace(/:[^:@]+@/, ':****@') : 'UNDEFINED');
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+console.log('Connecting to database at:', connectionString ? connectionString.replace(/:[^:@]+@/, ':****@') : 'UNDEFINED');
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
@@ -308,6 +309,10 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;
