@@ -1,0 +1,227 @@
+import React from 'react';
+import { NAV_ITEMS, TOOLS_CONFIG, INITIAL_LESSONS } from '@/constants';
+import { motion, AnimatePresence } from 'framer-motion';
+import { User as UserIcon, Sparkles, Mail, Notebook, BarChart3, LogIn, ShieldCheck, Settings } from 'lucide-react';
+import { User, UserStats } from '@/types';
+
+const MotionDiv = motion.div as any;
+
+const QuickOfficeLogo = ({ className = "w-8 h-8" }: { className?: string }) => (
+  <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" rx="30" fill="currentColor" />
+    <circle cx="46" cy="46" r="22" stroke="white" strokeWidth="10" strokeLinecap="round" />
+    <path 
+      d="M62 62L82 82L62 72L52 82L62 62Z" 
+      fill="white" 
+      stroke="white" 
+      strokeWidth="2" 
+      strokeLinejoin="round" 
+    />
+    <path 
+      d="M58 58L72 72L62 66L66 76L58 58Z" 
+      fill="white" 
+    />
+    <path d="M46 32L38 48H46L42 60L54 44H46L50 32H46Z" fill="white" fillOpacity="0.8" />
+  </svg>
+);
+
+interface SidebarProps {
+  activeTab: string;
+  setActiveTab: (id: string) => void;
+  currentUser?: User | null;
+  stats?: UserStats;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentUser, stats }) => {
+  const isAdmin = currentUser?.role === 'admin';
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-64 border-r-2 border-gray-100 dark:border-gray-800 h-screen fixed left-0 top-0 bg-white dark:bg-gray-950 p-4 flex-col z-30 transition-colors duration-300">
+        <div className="mb-10 px-4 flex items-center gap-3">
+          <MotionDiv 
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            className={`transition-all ${isAdmin ? 'text-purple-600' : 'text-blue-600'}`}
+          >
+            <QuickOfficeLogo className="w-12 h-12 drop-shadow-[0_4px_0_rgba(0,0,0,0.1)]" />
+          </MotionDiv>
+          <div>
+            <h1 className="text-xl font-black text-gray-800 dark:text-white tracking-tight leading-none">QuickOffice</h1>
+            <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${isAdmin ? 'text-purple-500' : 'text-blue-500'}`}>
+              {isAdmin ? 'Admin Console' : 'Suite Master'}
+            </p>
+          </div>
+        </div>
+
+        <nav className="space-y-1.5 px-2">
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full relative flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-200 font-extrabold group ${
+                activeTab === item.id 
+                  ? (isAdmin && item.id === 'admin' ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400') 
+                  : 'bg-transparent text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-900'
+              }`}
+            >
+              {activeTab === item.id && (
+                <MotionDiv 
+                  layoutId="activeTabPill"
+                  className={`absolute left-0 w-1.5 h-6 rounded-r-full ${isAdmin ? 'bg-purple-600' : 'bg-blue-600'}`}
+                />
+              )}
+              <span className={`shrink-0 transition-transform ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`}>
+                {item.icon}
+              </span>
+              <span className="uppercase tracking-wide text-xs">{item.label}</span>
+            </button>
+          ))}
+
+          {/* Admin Specific Nav */}
+          {isAdmin && (
+            <button
+              onClick={() => setActiveTab('admin')}
+              className={`w-full relative flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-200 font-extrabold group ${
+                activeTab === 'admin' 
+                  ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' 
+                  : 'bg-transparent text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-900'
+              }`}
+            >
+              {activeTab === 'admin' && (
+                <MotionDiv 
+                  layoutId="activeTabPill"
+                  className="absolute left-0 w-1.5 h-6 bg-purple-600 rounded-r-full"
+                />
+              )}
+              <ShieldCheck className={`w-6 h-6 shrink-0 transition-transform ${activeTab === 'admin' ? 'scale-110 text-purple-600' : 'group-hover:scale-110'}`} />
+              <span className="uppercase tracking-wide text-xs">Admin Panel</span>
+            </button>
+          )}
+        </nav>
+
+        {/* Related Suite Apps (Proficiency) */}
+        {!isAdmin && stats && (
+          <div className="mt-8 px-4">
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <h3 className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Suite Proficiency</h3>
+            </div>
+            <div className="space-y-4">
+              {Object.entries(TOOLS_CONFIG).map(([name, config]) => {
+                const totalLessons = INITIAL_LESSONS.filter(l => l.tool === name).length;
+                const completedCount = stats.completedLessons.filter(id => {
+                  const lesson = INITIAL_LESSONS.find(l => l.id === id);
+                  return lesson && lesson.tool === name;
+                }).length;
+                const progress = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
+                const level = Math.floor(progress / 20) + 1;
+
+                return (
+                  <div key={name} className="space-y-1.5">
+                    <div className="flex justify-between text-[10px] font-black uppercase tracking-tighter">
+                      <span className="text-gray-500 dark:text-gray-400">{name}</span>
+                      <span className="text-gray-400 dark:text-gray-600">Lv. {level}</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                       <MotionDiv 
+                         initial={{ width: 0 }}
+                         animate={{ width: `${progress}%` }}
+                         className={`h-full ${config.color} rounded-full opacity-60`} 
+                       />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-auto pt-6">
+          {currentUser ? (
+            <MotionDiv 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              onClick={() => setActiveTab('profile')}
+              className={`p-4 rounded-3xl cursor-pointer transition-all border-2 ${
+                activeTab === 'profile' 
+                  ? (isAdmin ? 'bg-purple-600 border-purple-600 shadow-xl text-white' : 'bg-blue-600 border-blue-600 shadow-xl text-white')
+                  : 'bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-800 text-gray-800 dark:text-gray-200'
+              } overflow-hidden group`}
+            >
+              <div className="flex items-center gap-3 relative z-10">
+                 <div className={`w-10 h-10 ${activeTab === 'profile' ? 'bg-white/20' : 'bg-blue-100 dark:bg-blue-900/40'} rounded-full flex items-center justify-center overflow-hidden border border-white/20`}>
+                    {currentUser.avatarUrl ? (
+                      <img src={currentUser.avatarUrl} alt="" />
+                    ) : (
+                      <UserIcon className={`w-6 h-6 ${activeTab === 'profile' ? 'text-white' : (isAdmin ? 'text-purple-600' : 'text-blue-600 dark:text-blue-400')}`} />
+                    )}
+                 </div>
+                 <div>
+                    <p className="text-sm font-black leading-tight truncate w-32">{currentUser.fullname}</p>
+                    <p className={`text-[10px] font-bold uppercase ${activeTab === 'profile' ? 'text-white/60' : 'text-gray-400 dark:text-gray-500'}`}>
+                      {isAdmin ? 'ADMIN' : 'VIEW PROFILE'}
+                    </p>
+                 </div>
+              </div>
+            </MotionDiv>
+          ) : (
+            <button 
+              onClick={() => setActiveTab('profile')}
+              className="w-full bg-blue-600 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-widest shadow-[0_4px_0_0_#1d4ed8] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2"
+            >
+              <LogIn className="w-4 h-4" /> Sign In
+            </button>
+          )}
+        </div>
+      </aside>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-t-2 border-gray-100 dark:border-gray-800 px-2 py-3 flex justify-around items-center z-40 safe-area-bottom">
+        {NAV_ITEMS.map((item) => {
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className="relative flex-1 flex flex-col items-center py-1 outline-none group"
+            >
+              <AnimatePresence>
+                {isActive && (
+                  <MotionDiv
+                    layoutId="mobileActivePill"
+                    className="absolute inset-x-2 inset-y-0 bg-blue-50 dark:bg-blue-900/20 rounded-2xl -z-10"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                  />
+                )}
+              </AnimatePresence>
+
+              <span className={`transition-all duration-300 ${
+                isActive ? 'text-blue-600 dark:text-blue-400 scale-110 -translate-y-1' : 'text-gray-400 dark:text-gray-600 scale-100'
+              }`}>
+                {item.icon}
+              </span>
+              <span className={`text-[9px] font-black uppercase tracking-tighter transition-colors ${
+                isActive ? 'text-blue-600 dark:text-blue-400 opacity-100' : 'text-gray-400 dark:text-gray-600 opacity-70'
+              }`}>
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+        {isAdmin && (
+           <button
+              onClick={() => setActiveTab('admin')}
+              className={`relative flex-1 flex flex-col items-center py-1 outline-none group ${activeTab === 'admin' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400 dark:text-gray-600'}`}
+           >
+              <Settings className={`w-5 h-5 transition-transform ${activeTab === 'admin' ? 'scale-110 -translate-y-1' : ''}`} />
+              <span className="text-[9px] font-black uppercase tracking-tighter">Admin</span>
+           </button>
+        )}
+      </nav>
+    </>
+  );
+};

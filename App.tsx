@@ -1,16 +1,16 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Sidebar } from './components/Sidebar';
-import { PathNode } from './components/PathNode';
-import { LessonEngine } from './components/LessonEngine';
-import { TutorialLibrary } from './components/TutorialLibrary';
-import { ProfileView } from './components/ProfileView';
-import { SettingsView } from './components/SettingsView';
-import { AuthModal } from './components/AuthModal';
-import { AdminPanel } from './components/AdminPanel';
-import { Dashboard } from './components/Dashboard';
-import { LearnSidePanel } from './components/LearnSidePanel';
-import { Guidebook } from './components/Guidebook';
+import { Sidebar } from '@/components/Sidebar';
+import { PathNode } from '@/components/PathNode';
+import { LessonEngine } from '@/components/LessonEngine';
+import { TutorialLibrary } from '@/components/TutorialLibrary';
+import { ProfileView } from '@/components/ProfileView';
+import { SettingsView } from '@/components/SettingsView';
+import { AuthModal } from '@/components/AuthModal';
+import { AdminPanel } from '@/components/AdminPanel';
+import { Dashboard } from '@/components/Dashboard';
+import { LearnSidePanel } from '@/components/LearnSidePanel';
+import { Guidebook } from '@/components/Guidebook';
 import { UserStats, OfficeTool, Lesson, User } from './types';
 import { INITIAL_LESSONS, TOOLS_CONFIG } from './constants';
 import { Map as MapIcon, BookOpen, Database as DbIcon, AlertCircle } from 'lucide-react';
