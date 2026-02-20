@@ -60,9 +60,16 @@ export const api = {
   checkHealth: async () => {
     try {
       const res = await fetch(`${BASE_URL}/health`);
-      return res.ok;
-    } catch {
-      return false;
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        return { 
+          ok: false, 
+          message: data.message || data.error || 'Database connection failed' 
+        };
+      }
+      return { ok: true };
+    } catch (err: any) {
+      return { ok: false, message: 'Backend server is not responding' };
     }
   },
 

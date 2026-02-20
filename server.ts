@@ -15,11 +15,18 @@ const PORT = 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'quickoffice-secret-key';
 
 // PostgreSQL Connection
-const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
-console.log('Connecting to database at:', connectionString ? connectionString.replace(/:[^:@]+@/, ':****@') : 'UNDEFINED');
-const pool = new Pool({
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING;
+console.log('Database connection attempt...');
+if (!connectionString) {
+  console.error('CRITICAL: No database connection string found in environment variables (DATABASE_URL, POSTGRES_URL, etc.)');
+}
+
+const pool = new Pool(connectionString ? {
   connectionString,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: false }
+} : {
+  // Fallback to empty config to prevent immediate crash, 
+  // but health check will catch the missing string
 });
 
 app.use(cors());
@@ -125,10 +132,22 @@ initDb().then(() => seedDb());
 // Health Check
 app.get('/api/health', async (req, res) => {
   try {
+    if (!connectionString) {
+      return res.status(500).json({ 
+        status: 'error', 
+        message: 'No connection string configured. Check Vercel Environment Variables.' 
+      });
+    }
     const dbCheck = await pool.query('SELECT 1');
     res.json({ status: 'ok', database: 'connected', timestamp: new Date() });
-  } catch (err) {
-    res.status(500).json({ status: 'error', database: 'disconnected' });
+  } catch (err: any) {
+    console.error('Health check DB error:', err.message);
+    res.status(500).json({ 
+      status: 'error', 
+      database: 'disconnected', 
+      error: err.message,
+      hint: 'Ensure your Vercel Postgres database is active and SSL is allowed.' 
+    });
   }
 });
 

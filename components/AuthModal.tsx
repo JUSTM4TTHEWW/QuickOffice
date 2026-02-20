@@ -67,6 +67,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
     setIsLoading(true);
 
     try {
+      const health = await api.checkHealth();
+      if (!health.ok) {
+        setErrors({ general: health.message });
+        setIsLoading(false);
+        return;
+      }
+
       if (mode === 'login') {
         const response = await api.login({ email: formData.email, password: formData.password });
         if (response.user) {
