@@ -1,5 +1,4 @@
 import express from 'express';
-import { createServer as createViteServer } from 'vite';
 import pg from 'pg';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -23,11 +22,8 @@ if (!connectionString) {
 
 const pool = new Pool(connectionString ? {
   connectionString,
-  ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: false }
-} : {
-  // Fallback to empty config to prevent immediate crash, 
-  // but health check will catch the missing string
-});
+  ssl: { rejectUnauthorized: false }
+} : {});
 
 app.use(cors());
 app.use(express.json());
@@ -183,7 +179,6 @@ app.post('/api/auth/signup', async (req, res) => {
     );
     const user = result.rows[0];
     
-    // Initialize stats for new user
     await pool.query(
       'INSERT INTO stats (user_id, xp, streak, completed_lessons, current_tool) VALUES ($1, 0, 0, $2, $3)',
       [user.id, [], 'Excel']
@@ -231,7 +226,6 @@ app.get('/api/stats/:userId', async (req, res) => {
       return res.status(404).json({ message: 'Stats not found' });
     }
     const stats = result.rows[0];
-    // Map DB fields to frontend camelCase if necessary
     res.json({
       xp: stats.xp,
       streak: stats.streak,
@@ -283,7 +277,7 @@ app.get('/api/lessons', async (req, res) => {
         videoUrl: row.video_url
       },
       description: row.description,
-      questions: [], // These might be static or stored elsewhere, for now empty
+      questions: [],
       performanceSteps: [],
       xpReward: 50
     })));
@@ -314,23 +308,22 @@ app.delete('/api/lessons/:id', async (req, res) => {
   }
 });
 
-// Vite Middleware for Development
+// Vite Middleware — dynamic import so it doesn't crash on Vercel
 if (process.env.NODE_ENV !== 'production') {
+  const { createServer: createViteServer } = await import('vite');
   const vite = await createViteServer({
     server: { middlewareMode: true },
     appType: 'spa',
   });
   app.use(vite.middlewares);
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
 } else {
   app.use(express.static('dist'));
   app.get('*', (req, res) => {
     res.sendFile('dist/index.html', { root: '.' });
-  });
-}
-
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 
