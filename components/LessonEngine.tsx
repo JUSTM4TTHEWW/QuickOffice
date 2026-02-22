@@ -31,6 +31,7 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
   
   const [hearts, setHearts] = useState(5);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [showQuitConfirmation, setShowQuitConfirmation] = useState(false);
   const [wrongAnswersHistory, setWrongAnswersHistory] = useState<Record<string, string[]>>({});
   
   const [hasInteractedWithVideo, setHasInteractedWithVideo] = useState(false);
@@ -377,7 +378,7 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
     <MotionDiv initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed inset-0 bg-white dark:bg-gray-950 z-50 flex flex-col">
       {/* Header */}
       <div className="max-w-5xl mx-auto w-full p-4 flex items-center gap-4">
-        <button onClick={onQuit} className="p-2 text-gray-300 hover:text-gray-500 transition-colors"><ChevronLeft size={28} /></button>
+        <button onClick={() => setShowQuitConfirmation(true)} className="p-2 text-gray-300 hover:text-gray-500 transition-colors"><ChevronLeft size={28} /></button>
         <div className="flex-1 flex flex-col gap-1.5">
           <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-gray-400">
              <div className="flex items-center gap-1.5"><Clock size={12} /> {Math.floor(seconds/60)}:{(seconds%60).toString().padStart(2, '0')}</div>
@@ -513,6 +514,46 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
           </AnimatePresence>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showQuitConfirmation && (
+          <MotionDiv 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-6"
+          >
+            <MotionDiv 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-gray-900 w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl text-center border-4 border-gray-100 dark:border-gray-800"
+            >
+              <div className="w-20 h-20 bg-amber-100 dark:bg-amber-900/40 rounded-3xl flex items-center justify-center mx-auto mb-6 text-amber-600 dark:text-amber-400">
+                <AlertCircle size={40} />
+              </div>
+              <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-3 tracking-tight">Wait, don’t go!</h3>
+              <p className="text-gray-500 dark:text-gray-400 font-bold mb-8 leading-relaxed">
+                You’ll lose your progress if you quit now. Are you sure you want to exit?
+              </p>
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={() => setShowQuitConfirmation(false)}
+                  className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-lg shadow-[0_5px_0_0_#1d4ed8] active:translate-y-1 active:shadow-none transition-all uppercase tracking-widest"
+                >
+                  Keep Learning
+                </button>
+                <button 
+                  onClick={onQuit}
+                  className="w-full py-4 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                >
+                  End Session
+                </button>
+              </div>
+            </MotionDiv>
+          </MotionDiv>
+        )}
+      </AnimatePresence>
 
       {/* Footer Feedback Bar */}
       <div className={`p-6 sm:p-8 border-t-2 transition-all duration-300 ${

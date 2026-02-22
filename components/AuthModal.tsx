@@ -30,6 +30,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
     }
   }, [isOpen, initialMode]);
 
+  useEffect(() => {
+    setErrors({});
+  }, [mode]);
+
   const validate = () => {
     const e: typeof errors = {};
     
@@ -65,6 +69,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
     e.preventDefault();
     if (!validate()) return;
     setIsLoading(true);
+    setErrors({});
 
     try {
       const health = await api.checkHealth();
@@ -139,7 +144,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
               {mode === 'login' ? (
                 <MotionDiv key="login" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -20, opacity: 0 }} className="space-y-8">
                   <div className="text-center">
-                    <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center text-white font-black text-4xl shadow-[0_6px_0_0_#1d4ed8] mx-auto mb-6">Q</div>
+                    <img 
+                      src="/logo.png" 
+                      alt="QuickOffice Logo" 
+                      className="w-24 h-24 mx-auto mb-6 object-contain drop-shadow-lg" 
+                    />
                     <h1 className="text-4xl font-black text-gray-900 dark:text-white">Welcome Back</h1>
                     <p className="text-gray-400 font-bold mt-2">Log in to sync your progress</p>
                   </div>
@@ -153,7 +162,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
 
                   <form onSubmit={handleSubmit} className="space-y-1">
                     <div className="flex flex-col">
-                      <label className="text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Email Address *</label>
+                      <label className="text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Email Address <span className="text-red-600 font-bold ml-0.5" style={{ color: '#dc2626' }}>*</span></label>
                       <input 
                         type="email" 
                         placeholder="e.g. carl@example.com" 
@@ -167,7 +176,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                       <ErrorDisplay message={errors.email} />
                     </div>
                     <div className="flex flex-col">
-                      <label className="text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Password *</label>
+                      <label className="text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Password <span className="text-red-600 font-bold ml-0.5" style={{ color: '#dc2626' }}>*</span></label>
                       <div className="relative">
                         <input 
                           type={showPassword ? "text" : "password"} 
@@ -197,16 +206,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                     <button onClick={() => setMode('login')} className="absolute top-8 left-8 flex items-center gap-1 font-black text-xs text-gray-400 uppercase tracking-widest hover:text-blue-600 transition-colors">
                       <ChevronLeft size={16}/> Back
                     </button>
-                    <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center text-white font-black text-4xl shadow-[0_6px_0_0_#4338ca] mx-auto mb-6">
-                      <UserPlus size={40}/>
-                    </div>
+                    <img 
+                      src="/logo.png" 
+                      alt="QuickOffice Logo" 
+                      className="w-24 h-24 mx-auto mb-6 object-contain drop-shadow-lg" 
+                    />
                     <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">Join the Quest</h1>
                     <p className="text-gray-400 font-bold mt-2">Persistence in Postgres</p>
                   </div>
 
+                  {errors.general && (
+                    <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl flex items-center gap-3 font-bold text-xs border border-red-100 dark:border-red-900/40 mb-4">
+                      <AlertCircle size={18}/>
+                      {errors.general}
+                    </div>
+                  )}
+
                   <form onSubmit={handleSubmit} className="space-y-1">
                     <div className="flex flex-col">
-                      <label className="text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Full Name *</label>
+                      <label className="text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Full Name <span className="text-red-600 font-bold ml-0.5" style={{ color: '#dc2626' }}>*</span></label>
                       <input 
                         type="text" 
                         placeholder="e.g. Carl Faltado" 
@@ -220,7 +238,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                       <ErrorDisplay message={errors.fullname} />
                     </div>
                     <div className="flex flex-col">
-                      <label className="text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Email Address *</label>
+                      <label className="text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Email Address <span className="text-red-600 font-bold ml-0.5" style={{ color: '#dc2626' }}>*</span></label>
                       <input 
                         type="email" 
                         placeholder="e.g. carl@example.com" 
@@ -234,7 +252,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                       <ErrorDisplay message={errors.email} />
                     </div>
                     <div className="flex flex-col">
-                      <label className="text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Create Password *</label>
+                      <label className="text-[10px] font-black uppercase text-gray-400 ml-2 mb-1">Create Password <span className="text-red-600 font-bold ml-0.5" style={{ color: '#dc2626' }}>*</span></label>
                       <div className="relative">
                         <input 
                           type={showPassword ? "text" : "password"} 
