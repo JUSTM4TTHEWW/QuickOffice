@@ -1,8 +1,9 @@
 import React from 'react';
 import { NAV_ITEMS, TOOLS_CONFIG, INITIAL_LESSONS } from '@/constants';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User as UserIcon, Sparkles, Mail, Notebook, BarChart3, LogIn, ShieldCheck, Settings } from 'lucide-react';
+import { User as UserIcon, Sparkles, Mail, Notebook, BarChart3, LogIn, ShieldCheck, Settings, Zap } from 'lucide-react';
 import { User, UserStats } from '@/types';
+import { QuickOfficeLogo } from './Logo';
 
 const MotionDiv = motion.div as any;
 
@@ -28,15 +29,6 @@ const Tooltip: React.FC<{ text: string; children: React.ReactNode }> = ({ text, 
   );
 };
 
-const QuickOfficeLogo = ({ className = "w-8 h-8" }: { className?: string }) => (
-  <img 
-    src="/logo.png" 
-    alt="QuickOffice Logo" 
-    className={className}
-    style={{ objectFit: 'contain' }}
-  />
-);
-
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (id: string) => void;
@@ -56,7 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, curre
             whileHover={{ scale: 1.1, rotate: 5 }}
             className={`transition-all ${isAdmin ? 'text-purple-600' : 'text-blue-600'}`}
           >
-            <QuickOfficeLogo className="w-12 h-12 drop-shadow-[0_4px_0_rgba(0,0,0,0.1)]" />
+            <QuickOfficeLogo className="w-12 h-12" iconClassName="w-6 h-6" />
           </MotionDiv>
           <div>
             <h1 className="text-xl font-black text-gray-800 dark:text-white tracking-tight leading-none">QuickOffice</h1>

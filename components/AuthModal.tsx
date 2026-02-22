@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Lock, User as UserIcon, ArrowRight, AlertCircle, Loader2, Eye, EyeOff, UserPlus, LogIn, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { X, Mail, Lock, User as UserIcon, ArrowRight, AlertCircle, Loader2, Eye, EyeOff, UserPlus, LogIn, ChevronLeft, CheckCircle2, Zap } from 'lucide-react';
 import { User } from '@/types';
 import { api } from '@/services/api';
+import { QuickOfficeLogo } from './Logo';
 
 const MotionDiv = motion.div as any;
 
@@ -144,11 +145,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
               {mode === 'login' ? (
                 <MotionDiv key="login" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -20, opacity: 0 }} className="space-y-8">
                   <div className="text-center">
-                    <img 
-                      src="/logo.png" 
-                      alt="QuickOffice Logo" 
-                      className="w-24 h-24 mx-auto mb-6 object-contain drop-shadow-lg" 
-                    />
+                    <QuickOfficeLogo className="w-20 h-20 mx-auto mb-6 shadow-2xl" iconClassName="w-10 h-10" />
                     <h1 className="text-4xl font-black text-gray-900 dark:text-white">Welcome Back</h1>
                     <p className="text-gray-400 font-bold mt-2">Log in to sync your progress</p>
                   </div>
@@ -206,11 +203,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                     <button onClick={() => setMode('login')} className="absolute top-8 left-8 flex items-center gap-1 font-black text-xs text-gray-400 uppercase tracking-widest hover:text-blue-600 transition-colors">
                       <ChevronLeft size={16}/> Back
                     </button>
-                    <img 
-                      src="/logo.png" 
-                      alt="QuickOffice Logo" 
-                      className="w-24 h-24 mx-auto mb-6 object-contain drop-shadow-lg" 
-                    />
+                    <QuickOfficeLogo className="w-20 h-20 mx-auto mb-6 shadow-2xl" iconClassName="w-10 h-10" />
                     <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">Join the Quest</h1>
                     <p className="text-gray-400 font-bold mt-2">Persistence in Postgres</p>
                   </div>

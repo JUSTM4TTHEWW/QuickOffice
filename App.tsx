@@ -311,7 +311,12 @@ const App: React.FC = () => {
                    </MotionButton>
                 </div>
 
-                {renderRoadmap()}
+                <div className="w-full relative flex flex-col items-center py-10">
+                  {/* Decorative Path Line (Background) */}
+                  <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-2 bg-gray-50 dark:bg-gray-900/50 rounded-full -z-0" />
+                  
+                  {renderRoadmap()}
+                </div>
             </div>
             <LearnSidePanel stats={stats} />
           </>
