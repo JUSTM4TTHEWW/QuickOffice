@@ -96,11 +96,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
           <div className="space-y-2 mb-8">
              <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 space-y-1.5">
-                   <label className="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 ml-2">Display Name</label>
+                   <label className="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 ml-2">Display Name <span className="text-red-500">*</span></label>
                    <input type="text" placeholder="Your name" className="w-full px-5 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl font-bold outline-none focus:border-blue-500 dark:focus:border-blue-400 dark:text-white transition-all" />
                 </div>
                 <div className="flex-1 space-y-1.5">
-                   <label className="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 ml-2">Email Address</label>
+                   <label className="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 ml-2">Email Address <span className="text-red-500">*</span></label>
                    <input type="email" placeholder="email@example.com" className="w-full px-5 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl font-bold outline-none focus:border-blue-500 dark:focus:border-blue-400 dark:text-white transition-all" />
                 </div>
              </div>
