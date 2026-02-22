@@ -212,27 +212,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onGetStarted, onLogin }) =
         </div>
       </section>
 
-      {/* Statistics Section */}
-      <section className="py-20 bg-blue-600 z-10 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-        </div>
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12">
-            {[
-              { label: "Students", value: "500+" },
-              { label: "Lessons", value: "50+" },
-              { label: "Success Rate", value: "100%" },
-              { label: "Cost", value: "₱0" }
-            ].map((stat, i) => (
-              <div key={i} className="text-center">
-                <p className="text-4xl sm:text-6xl font-black text-white mb-2 tracking-tighter">{stat.value}</p>
-                <p className="text-blue-200 font-black uppercase text-xs sm:text-sm tracking-widest">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Why QuickOffice Section */}
       <section className="py-20 bg-gray-50/50 z-10 relative">
