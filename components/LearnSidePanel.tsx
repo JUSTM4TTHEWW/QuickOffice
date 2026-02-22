@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Flame, Sparkles, Trophy, Target, TrendingUp, Cpu, Timer } from 'lucide-react';
+import { Flame, Sparkles, Trophy, Target, TrendingUp, Cpu, Timer, Info } from 'lucide-react';
 import { UserStats } from '@/types';
 
 const MotionDiv = motion.div as any;
@@ -147,6 +147,22 @@ export const LearnSidePanel: React.FC<LearnSidePanelProps> = ({ stats }) => {
              <Cpu className="w-4 h-4" />
              <p className="text-[10px] font-black uppercase tracking-wider">Practice Mode Active</p>
           </div>
+        </div>
+      </div>
+
+      {/* XP Guide Note */}
+      <div className="bg-blue-600 dark:bg-blue-500 rounded-[2rem] p-6 text-white shadow-xl relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+          <Sparkles size={60} />
+        </div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-3">
+             <Info size={16} className="text-blue-200" />
+             <h3 className="text-xs font-black uppercase tracking-widest">How to earn XP?</h3>
+          </div>
+          <p className="text-xs font-bold text-blue-100 leading-relaxed">
+            Complete lessons on your roadmap to earn XP. Each lesson has multiple phases: Concept Mastery, Theory Checkpoint, and Step-by-Step Skills. Finishing all phases grants you the full XP reward!
+          </p>
         </div>
       </div>
     </div>

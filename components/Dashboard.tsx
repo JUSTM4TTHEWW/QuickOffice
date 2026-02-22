@@ -10,7 +10,13 @@ import {
   ShieldCheck,
   Star,
   Cpu,
-  FileText
+  FileText,
+  BarChart3,
+  CheckCircle2,
+  PlayCircle,
+  Award,
+  BookOpen,
+  MousePointer2
 } from 'lucide-react';
 
 import { QuickOfficeLogo } from './Logo';
@@ -153,6 +159,81 @@ export const Dashboard: React.FC<DashboardProps> = ({ onGetStarted, onLogin }) =
         </div>
       </section>
 
+      {/* Tools Section */}
+      <section className="py-20 sm:py-32 bg-white z-10 relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16 sm:mb-24">
+            <h2 className="text-4xl sm:text-6xl font-black text-gray-900 mb-6 tracking-tight">Tools We <span className="text-blue-600">Master</span></h2>
+            <p className="text-gray-400 font-bold text-lg sm:text-xl max-w-2xl mx-auto">We focus on the essential suite that powers the global workforce.</p>
+          </div>
+          
+          <div className="space-y-8 sm:space-y-12">
+            {[
+              { 
+                tool: "Microsoft Excel", 
+                desc: "From basic formulas to complex data analysis and visualization.", 
+                color: "bg-green-600", 
+                icon: <BarChart3 className="w-10 h-10" />,
+                features: ["Data Management", "Complex Formulas", "Pivot Tables"]
+              },
+              { 
+                tool: "Microsoft Word", 
+                desc: "Master professional document creation, formatting, and collaboration.", 
+                color: "bg-blue-600", 
+                icon: <FileText className="w-10 h-10" />,
+                features: ["Academic Formatting", "Mail Merge", "Review Tools"]
+              },
+              { 
+                tool: "Microsoft PowerPoint", 
+                desc: "Create high-impact presentations that captivate and inform.", 
+                color: "bg-orange-600", 
+                icon: <Layout className="w-10 h-10" />,
+                features: ["Slide Design", "Animations", "Presenter Tools"]
+              }
+            ].map((item, i) => (
+              <div key={i} className="group flex flex-col lg:flex-row items-center gap-8 sm:gap-12 p-8 sm:p-12 bg-gray-50 rounded-[3rem] border-2 border-transparent hover:border-blue-100 transition-all">
+                <div className={`w-24 h-24 sm:w-32 sm:h-32 ${item.color} rounded-[2rem] flex items-center justify-center text-white shadow-2xl group-hover:scale-110 transition-transform shrink-0`}>
+                  {item.icon}
+                </div>
+                <div className="flex-1 text-center lg:text-left">
+                  <h3 className="text-3xl sm:text-4xl font-black mb-4">{item.tool}</h3>
+                  <p className="text-gray-500 font-bold text-lg mb-8 max-w-2xl">{item.desc}</p>
+                  <div className="flex flex-wrap justify-center lg:justify-start gap-3">
+                    {item.features.map(f => (
+                      <span key={f} className="px-4 py-2 bg-white rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest text-gray-400 border border-gray-100">
+                        {f}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Statistics Section */}
+      <section className="py-20 bg-blue-600 z-10 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        </div>
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12">
+            {[
+              { label: "Students", value: "500+" },
+              { label: "Lessons", value: "50+" },
+              { label: "Success Rate", value: "100%" },
+              { label: "Cost", value: "₱0" }
+            ].map((stat, i) => (
+              <div key={i} className="text-center">
+                <p className="text-4xl sm:text-6xl font-black text-white mb-2 tracking-tighter">{stat.value}</p>
+                <p className="text-blue-200 font-black uppercase text-xs sm:text-sm tracking-widest">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Why QuickOffice Section */}
       <section className="py-20 bg-gray-50/50 z-10 relative">
         <div className="max-w-6xl mx-auto px-6">
@@ -182,6 +263,53 @@ export const Dashboard: React.FC<DashboardProps> = ({ onGetStarted, onLogin }) =
               <h3 className="text-2xl font-black mb-4">Postgres Powered</h3>
               <p className="text-gray-500 font-bold leading-relaxed">Your progress is securely synced to our database, allowing you to pick up exactly where you left off on any device.</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-20 sm:py-32 bg-white z-10 relative">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl sm:text-6xl font-black text-gray-900 mb-6">How It <span className="text-blue-600">Works</span></h2>
+            <p className="text-gray-400 font-bold text-lg max-w-2xl mx-auto">Three simple steps to becoming a suite master.</p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-12 sm:gap-16">
+            {[
+              { 
+                step: "01", 
+                title: "Learn Theory", 
+                desc: "Watch high-quality tutorials and master the core concepts of each tool.", 
+                icon: <PlayCircle className="w-8 h-8" />,
+                color: "text-blue-600"
+              },
+              { 
+                step: "02", 
+                title: "Practice Drills", 
+                desc: "Apply what you've learned through interactive performance tasks and quizzes.", 
+                icon: <MousePointer2 className="w-8 h-8" />,
+                color: "text-green-600"
+              },
+              { 
+                step: "03", 
+                title: "Earn Badges", 
+                desc: "Complete stages to unlock achievements and build your digital portfolio.", 
+                icon: <Award className="w-8 h-8" />,
+                color: "text-orange-600"
+              }
+            ].map((item, i) => (
+              <div key={i} className="relative group">
+                <div className="text-8xl sm:text-9xl font-black text-gray-50 absolute -top-12 -left-4 group-hover:text-blue-50 transition-colors -z-10">
+                  {item.step}
+                </div>
+                <div className={`w-16 h-16 bg-white border-2 border-gray-100 rounded-2xl flex items-center justify-center mb-8 shadow-sm ${item.color}`}>
+                  {item.icon}
+                </div>
+                <h3 className="text-2xl font-black mb-4">{item.title}</h3>
+                <p className="text-gray-500 font-bold leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -233,6 +361,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ onGetStarted, onLogin }) =
                 </div>
               </MotionDiv>
             </AnimatePresence>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="py-20 sm:py-32 bg-white z-10 relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <div className="bg-blue-600 rounded-[3rem] sm:rounded-[4rem] p-10 sm:p-20 text-white shadow-2xl relative overflow-hidden">
+             {/* Decorative Background for CTA */}
+             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
+             <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400/20 rounded-full -ml-32 -mb-32 blur-3xl" />
+             
+             <div className="relative z-10">
+                <h2 className="text-4xl sm:text-6xl font-black mb-8 tracking-tighter leading-tight">Ready to Start Your <br/> Journey?</h2>
+                <p className="text-lg sm:text-xl text-blue-100 font-bold mb-12 max-w-2xl mx-auto">Join hundreds of students mastering the tools of tomorrow. It's free, interactive, and built for your success.</p>
+                <button 
+                  onClick={onGetStarted}
+                  className="px-10 sm:px-16 py-5 sm:py-7 bg-white text-blue-600 rounded-2xl sm:rounded-[2.5rem] font-black text-xl sm:text-2xl shadow-[0_8px_0_0_#d1d5db] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-4 mx-auto group"
+                >
+                  CREATE ACCOUNT <ArrowRight className="w-6 h-6 sm:w-8 sm:h-8 group-hover:translate-x-2 transition-transform" />
+                </button>
+             </div>
           </div>
         </div>
       </section>

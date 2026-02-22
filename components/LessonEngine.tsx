@@ -33,6 +33,7 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
   const [isGameOver, setIsGameOver] = useState(false);
   const [showQuitConfirmation, setShowQuitConfirmation] = useState(false);
   const [wrongAnswersHistory, setWrongAnswersHistory] = useState<Record<string, string[]>>({});
+  const [isTimeUp, setIsTimeUp] = useState(false);
   
   const [hasInteractedWithVideo, setHasInteractedWithVideo] = useState(false);
 
@@ -58,6 +59,7 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
       setHearts(5); // Reset hearts for Phase 1
       setSeconds(getInitialTime('quiz1'));
       setWrongAnswersHistory({});
+      setIsTimeUp(false);
     }
     if (phase === 'quiz2') {
       const sSelected = prepareQuizPool(lesson.performanceSteps, 15);
@@ -65,11 +67,13 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
       setCurrentIndex(0);
       setHearts(3); // Quiz 2 is harder: Reset hearts to 3 instead of 5
       setSeconds(getInitialTime('quiz2'));
+      setIsTimeUp(false);
     }
     if (phase === 'wrongReview') {
       setCurrentIndex(0);
       setHearts(3); // Redemption also limited to 3 hearts
       setSeconds(getInitialTime('wrongReview'));
+      setIsTimeUp(false);
     }
   }, [lesson.id, phase]);
 
@@ -90,19 +94,22 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
 
   useEffect(() => {
     let interval: any;
-    if ((phase === 'quiz1' || phase === 'quiz2' || phase === 'wrongReview') && !feedback && !isGameOver) {
+    if ((phase === 'quiz1' || phase === 'quiz2' || phase === 'wrongReview') && !feedback && !isGameOver && !isTimeUp) {
       interval = setInterval(() => {
         setSeconds(s => {
-          if (s <= 1) return 0;
+          if (s <= 1) {
+            setIsTimeUp(true);
+            return 0;
+          }
           return s - 1;
         });
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [phase, feedback, isGameOver]);
+  }, [phase, feedback, isGameOver, isTimeUp]);
 
   const handleCheck = () => {
-    if (!currentQuestion) return;
+    if (!currentQuestion || isTimeUp) return;
     
     const isPractical = currentQuestion.type === QuestionType.DRAG_DROP;
     if (!isPractical && !selectedOption) return;
@@ -148,6 +155,7 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
     const wasCorrect = feedback?.isCorrect;
     setFeedback(null);
     setSelectedOption(null);
+    setIsTimeUp(false);
 
     if (phase === 'wrongReview' && wasCorrect && currentQuestion) {
       const remainingMissed = missedQuestions.filter(q => q.id !== currentQuestion.id);
@@ -555,13 +563,12 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
         )}
       </AnimatePresence>
 
-      {/* Footer Feedback Bar */}
       <div className={`p-6 sm:p-8 border-t-2 transition-all duration-300 ${
-        feedback ? (feedback.isCorrect ? 'bg-green-100 border-green-300 dark:bg-green-900/40' : 'bg-red-100 border-red-300 dark:bg-red-900/40') : 'bg-white dark:bg-gray-950 border-gray-100'
+        feedback ? (feedback.isCorrect ? 'bg-green-100 border-green-300 dark:bg-green-900/40' : 'bg-red-100 border-red-300 dark:bg-red-900/40') : isTimeUp ? 'bg-amber-100 border-amber-300 dark:bg-amber-900/40' : 'bg-white dark:bg-gray-950 border-gray-100'
       }`}>
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex-1">
-            {feedback && (
+            {feedback ? (
               <div className="flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shrink-0 ${feedback.isCorrect ? 'bg-green-500' : 'bg-red-500'}`}>
                   {feedback.isCorrect ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
@@ -571,19 +578,36 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
                    <p className="text-sm font-bold opacity-80 dark:text-gray-300">{feedback.text}</p>
                 </div>
               </div>
+            ) : isTimeUp ? (
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white shrink-0 bg-amber-500">
+                  <Clock size={24} />
+                </div>
+                <div>
+                   <h3 className="text-xl font-black text-amber-800">Time's Up!</h3>
+                   <p className="text-sm font-bold opacity-80 dark:text-gray-300">The timer ran out. You cannot answer this question anymore.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500">
+                <Info size={14} />
+                <p className="text-[10px] font-black uppercase tracking-widest">Tip: Earn XP by completing all phases of this lesson!</p>
+              </div>
             )}
           </div>
           <button 
-            onClick={feedback ? handleNext : handleCheck} 
-            disabled={(phase !== 'quiz2' && phase !== 'wrongReview' && !selectedOption && !isPractical) || isEvaluating} 
+            onClick={feedback ? handleNext : (isTimeUp ? handleNext : handleCheck)} 
+            disabled={(phase !== 'quiz2' && phase !== 'wrongReview' && !selectedOption && !isPractical && !isTimeUp) || isEvaluating} 
             className={`w-full sm:w-auto px-12 py-4 rounded-2xl font-black text-lg text-white transition-all ${
             feedback 
               ? (feedback.isCorrect ? 'bg-green-500 shadow-[0_5px_0_0_#15803d]' : 'bg-red-500 shadow-[0_5px_0_0_#b91c1c]') 
-              : (selectedOption || isPractical)
-                ? (isPractical ? 'bg-indigo-600 shadow-[0_5px_0_0_#4338ca]' : 'bg-blue-600 shadow-[0_5px_0_0_#1d4ed8]') 
-                : 'bg-gray-200 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
+              : isTimeUp
+                ? 'bg-amber-500 shadow-[0_5px_0_0_#b45309]'
+                : (selectedOption || isPractical)
+                  ? (isPractical ? 'bg-indigo-600 shadow-[0_5px_0_0_#4338ca]' : 'bg-blue-600 shadow-[0_5_0_0_#1d4ed8]') 
+                  : 'bg-gray-200 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
           }`}>
-             {isEvaluating ? <Loader2 className="animate-spin mx-auto" size={24} /> : feedback ? 'CONTINUE' : (isPractical ? 'VERIFY DRILL' : 'CHECK')}
+             {isEvaluating ? <Loader2 className="animate-spin mx-auto" size={24} /> : feedback ? 'CONTINUE' : isTimeUp ? 'SKIP QUESTION' : (isPractical ? 'VERIFY DRILL' : 'CHECK')}
           </button>
         </div>
       </div>

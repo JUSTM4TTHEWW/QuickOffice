@@ -1,7 +1,7 @@
 import React from 'react';
 import { NAV_ITEMS, TOOLS_CONFIG, INITIAL_LESSONS } from '@/constants';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User as UserIcon, Sparkles, Mail, Notebook, BarChart3, LogIn, ShieldCheck, Settings, Zap } from 'lucide-react';
+import { User as UserIcon, Sparkles, Mail, Notebook, BarChart3, LogIn, ShieldCheck, Settings, Zap, Bell } from 'lucide-react';
 import { User, UserStats } from '@/types';
 import { QuickOfficeLogo } from './Logo';
 
@@ -34,27 +34,85 @@ interface SidebarProps {
   setActiveTab: (id: string) => void;
   currentUser?: User | null;
   stats?: UserStats;
+  notifications: { id: string; title: string; date: string; read: boolean }[];
+  setNotifications: React.Dispatch<React.SetStateAction<{ id: string; title: string; date: string; read: boolean }[]>>;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentUser, stats }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, currentUser, stats, notifications, setNotifications }) => {
   const isAdmin = currentUser?.role === 'admin';
+  const [showNotifications, setShowNotifications] = React.useState(false);
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const markAllAsRead = () => {
+    const updated = notifications.map(n => ({ ...n, read: true }));
+    setNotifications(updated);
+    localStorage.setItem('quickoffice_notifications', JSON.stringify(updated));
+  };
 
   return (
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 border-r-2 border-gray-100 dark:border-gray-800 h-screen fixed left-0 top-0 bg-white dark:bg-gray-950 p-4 flex-col z-30 transition-colors duration-300">
-        <div className="mb-10 px-4 flex items-center gap-3">
-          <MotionDiv 
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            className={`transition-all ${isAdmin ? 'text-purple-600' : 'text-blue-600'}`}
-          >
-            <QuickOfficeLogo className="w-12 h-12" iconClassName="w-6 h-6" />
-          </MotionDiv>
-          <div>
-            <h1 className="text-xl font-black text-gray-800 dark:text-white tracking-tight leading-none">QuickOffice</h1>
-            <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${isAdmin ? 'text-purple-500' : 'text-blue-500'}`}>
-              {isAdmin ? 'Admin Console' : 'Suite Master'}
-            </p>
+        <div className="mb-10 px-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <MotionDiv 
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              className={`transition-all ${isAdmin ? 'text-purple-600' : 'text-blue-600'}`}
+            >
+              <QuickOfficeLogo className="w-12 h-12" iconClassName="w-6 h-6" />
+            </MotionDiv>
+            <div>
+              <h1 className="text-xl font-black text-gray-800 dark:text-white tracking-tight leading-none">QuickOffice</h1>
+              <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${isAdmin ? 'text-purple-500' : 'text-blue-500'}`}>
+                {isAdmin ? 'Admin Console' : 'Suite Master'}
+              </p>
+            </div>
+          </div>
+
+          {/* Notification Bell */}
+          <div className="relative">
+            <button 
+              onClick={() => {
+                setShowNotifications(!showNotifications);
+                if (!showNotifications && unreadCount > 0) markAllAsRead();
+              }}
+              className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative"
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-gray-950" />
+              )}
+            </button>
+
+            <AnimatePresence>
+              {showNotifications && (
+                <MotionDiv
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute left-0 mt-2 w-64 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl z-50 p-4 max-h-80 overflow-y-auto no-scrollbar"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Notifications</h3>
+                    {notifications.length > 0 && (
+                      <button onClick={() => { setNotifications([]); localStorage.removeItem('quickoffice_notifications'); }} className="text-[8px] font-black uppercase text-red-500 hover:underline">Clear All</button>
+                    )}
+                  </div>
+                  <div className="space-y-3">
+                    {notifications.length > 0 ? (
+                      notifications.map(n => (
+                        <div key={n.id} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
+                          <p className="text-xs font-black text-gray-800 dark:text-white leading-tight mb-1">{n.title}</p>
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{n.date}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-[10px] font-bold text-gray-400 text-center py-4 italic">No new announcements</p>
+                    )}
+                  </div>
+                </MotionDiv>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 

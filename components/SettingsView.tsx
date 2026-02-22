@@ -15,7 +15,10 @@ import {
   Smartphone,
   Info,
   Moon,
-  Sun
+  Sun,
+  CheckCircle2,
+  Languages,
+  Type
 } from 'lucide-react';
 import { UserStats } from '@/types';
 
@@ -32,6 +35,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [remindersEnabled, setRemindersEnabled] = useState(true);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const handleSave = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }, 1000);
+  };
 
   const handleResetProgress = () => {
     const freshStats: UserStats = {
@@ -105,8 +119,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
                 </div>
              </div>
           </div>
-          <button className="w-full sm:w-auto px-8 py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_4px_0_0_#1d4ed8] dark:shadow-[0_4px_0_0_#2563eb] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2">
-            <Save className="w-4 h-4" /> Save Changes
+          <button 
+            onClick={handleSave}
+            disabled={isSaving}
+            className={`w-full sm:w-auto px-8 py-3 rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_4px_0_0_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 ${
+              saveSuccess ? 'bg-green-600 text-white' : 'bg-blue-600 dark:bg-blue-500 text-white'
+            }`}
+          >
+            {isSaving ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}><Save className="w-4 h-4" /></motion.div> : saveSuccess ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+            {isSaving ? 'Saving...' : saveSuccess ? 'Changes Saved!' : 'Save Changes'}
           </button>
         </MotionDiv>
 
@@ -148,6 +169,28 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
               description="Keep your streak alive with gentle push notifications."
             >
               <Toggle active={remindersEnabled} onToggle={() => setRemindersEnabled(!remindersEnabled)} />
+            </SettingRow>
+            <SettingRow 
+              icon={Languages} 
+              label="Language" 
+              description="Select your preferred interface language."
+            >
+              <select className="bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl px-3 py-1.5 font-bold text-xs outline-none dark:text-white">
+                <option>English (US)</option>
+                <option>Filipino</option>
+                <option>Spanish</option>
+              </select>
+            </SettingRow>
+            <SettingRow 
+              icon={Type} 
+              label="Font Size" 
+              description="Adjust the text size for better readability."
+            >
+              <select className="bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl px-3 py-1.5 font-bold text-xs outline-none dark:text-white">
+                <option>Small</option>
+                <option>Medium</option>
+                <option>Large</option>
+              </select>
             </SettingRow>
           </div>
         </MotionDiv>

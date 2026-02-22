@@ -2,7 +2,6 @@
 import React from 'react';
 import { User, UserStats, OfficeTool } from '@/types';
 import { TOOLS_CONFIG, INITIAL_LESSONS } from '@/constants';
-import { motion } from 'motion/react';
 import { 
   Trophy, 
   Flame, 
@@ -12,8 +11,12 @@ import {
   Camera, 
   Medal, 
   Target,
-  Zap
+  Zap,
+  X,
+  CheckCircle2,
+  Clock
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const MotionDiv = motion.div as any;
 
@@ -23,7 +26,25 @@ interface ProfileViewProps {
   onLogout: () => void;
 }
 
+interface Milestone {
+  id: string;
+  title: string;
+  description: string;
+  date?: string;
+  obtained: boolean;
+}
+
 export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout }) => {
+  const [showMilestones, setShowMilestones] = React.useState(false);
+
+  const milestones: Milestone[] = [
+    { id: 'm1', title: 'First Steps', description: 'Complete your first lesson.', obtained: stats.completedLessons.length > 0, date: stats.completedLessons.length > 0 ? '2026-02-20' : undefined },
+    { id: 'm2', title: 'Power User', description: 'Complete 5 lessons.', obtained: stats.completedLessons.length >= 5, date: stats.completedLessons.length >= 5 ? '2026-02-21' : undefined },
+    { id: 'm3', title: 'Excel Wizard', description: 'Complete all Excel core lessons.', obtained: stats.completedLessons.filter(id => id.includes('excel')).length >= 3, date: undefined },
+    { id: 'm4', title: 'Word Smith', description: 'Complete all Word core lessons.', obtained: stats.completedLessons.filter(id => id.includes('word')).length >= 3, date: undefined },
+    { id: 'm5', title: 'Slide Master', description: 'Complete all PowerPoint core lessons.', obtained: stats.completedLessons.filter(id => id.includes('ppt')).length >= 3, date: undefined },
+  ];
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 lg:py-12">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -73,10 +94,24 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout 
                 <Calendar className="w-5 h-5 text-gray-400" />
                 <span className="text-sm">Joined {user.joinedDate}</span>
               </div>
-              <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-all">
-                <Medal className="w-5 h-5 text-gray-400" />
-                <span className="text-sm">Achievement Progress</span>
-              </div>
+            </div>
+
+            <div className="w-full mt-8">
+               <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 text-left ml-2">Your Badges</h3>
+               <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { id: 'b1', icon: '🏆', label: 'Starter', earned: stats.completedLessons.length > 0 },
+                    { id: 'b2', icon: '🔥', label: 'Streak', earned: stats.streak >= 3 },
+                    { id: 'b3', icon: '💎', label: 'Expert', earned: stats.completedLessons.length >= 10 },
+                    { id: 'b4', icon: '⚡', label: 'Fast', earned: stats.xp >= 500 },
+                  ].map(badge => (
+                    <div key={badge.id} className={`aspect-square rounded-xl flex items-center justify-center text-xl shadow-sm border-2 ${
+                      badge.earned ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800' : 'bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700 grayscale opacity-40'
+                    }`}>
+                      {badge.icon}
+                    </div>
+                  ))}
+               </div>
             </div>
 
             <hr className="w-full my-8 border-gray-100 dark:border-gray-800" />
@@ -149,7 +184,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout 
           {/* Achievements Section */}
           <div className="bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center">
              <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
-                <Trophy className="w-10 h-10 text-gray-200 dark:text-gray-700" />
+                <Trophy className={`w-10 h-10 ${stats.completedLessons.length >= 5 ? 'text-yellow-500' : 'text-gray-200 dark:text-gray-700'}`} />
              </div>
              <h3 className="text-xl font-black text-gray-800 dark:text-white mb-2">
                {stats.completedLessons.length >= 5 ? 'Rising Star' : 'No Achievements Yet'}
@@ -159,10 +194,69 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout 
                  ? "You've completed more than 5 lessons! Keep going to unlock the Office Guru badge." 
                  : "Keep learning to earn badges and special office tool honors! Finish your first stage in any tool to get started."}
              </p>
-             <button className="px-8 py-4 bg-blue-600 dark:bg-blue-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_4px_0_0_#1d4ed8] dark:shadow-[0_4px_0_0_#2563eb] active:scale-95 transition-transform">
+             <button 
+               onClick={() => setShowMilestones(true)}
+               className="px-8 py-4 bg-blue-600 dark:bg-blue-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_4px_0_0_#1d4ed8] dark:shadow-[0_4px_0_0_#2563eb] active:scale-95 transition-transform"
+             >
                 Go to Learning Path
              </button>
           </div>
+
+          {/* Milestones Modal */}
+          <AnimatePresence>
+            {showMilestones && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                <MotionDiv 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowMilestones(false)}
+                  className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                />
+                <MotionDiv 
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  className="relative w-full max-w-2xl bg-white dark:bg-gray-950 rounded-[2.5rem] border-4 border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+                >
+                  <div className="p-8 border-b-2 border-gray-50 dark:border-gray-900 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-black text-gray-800 dark:text-white">Learning Path Milestones</h2>
+                      <p className="text-gray-400 font-bold text-sm">Track your progress through the curriculum</p>
+                    </div>
+                    <button onClick={() => setShowMilestones(false)} className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                      <X size={24} />
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-8 space-y-4 no-scrollbar">
+                    {milestones.map(m => (
+                      <div key={m.id} className={`p-6 rounded-3xl border-2 transition-all flex items-center gap-6 ${
+                        m.obtained 
+                          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900/40' 
+                          : 'bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800 opacity-60'
+                      }`}>
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                          m.obtained ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-800 text-gray-400'
+                        }`}>
+                          {m.obtained ? <CheckCircle2 size={28} /> : <Clock size={28} />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-1">
+                            <h4 className={`font-black uppercase tracking-wide ${m.obtained ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`}>
+                              {m.obtained ? 'Obtained' : 'Not Obtained'}
+                            </h4>
+                            {m.date && <span className="text-[10px] font-black text-gray-400 bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full">{m.date}</span>}
+                          </div>
+                          <h3 className="text-xl font-black text-gray-800 dark:text-white">{m.title}</h3>
+                          <p className="text-sm font-bold text-gray-400 dark:text-gray-500">{m.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </MotionDiv>
+              </div>
+            )}
+          </AnimatePresence>
 
         </div>
       </div>
