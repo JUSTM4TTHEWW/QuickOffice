@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Lesson, OfficeTool } from '@/types';
 import { 
@@ -134,7 +135,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddTutorial, existingL
           <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-[2.5rem] p-8 shadow-sm space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase text-gray-400 ml-2">Title <span className="text-red-500">*</span></label>
+                <label className="text-[10px] font-black uppercase text-gray-400 ml-2">Title <span className="text-red-600 font-bold ml-0.5" style={{ color: '#dc2626' }}>*</span></label>
                 <input 
                   type="text" 
                   className={`w-full px-5 py-3.5 bg-gray-50 dark:bg-gray-800 border-2 rounded-2xl font-bold outline-none transition-all dark:text-white ${errors.title ? 'border-red-500 bg-red-50' : 'border-gray-100 dark:border-gray-700 focus:border-blue-500'}`}
@@ -147,7 +148,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddTutorial, existingL
                 {errors.title && <p className="text-[10px] font-bold text-red-500 ml-2 mt-1 flex items-center gap-1"><AlertTriangle size={10}/> {errors.title}</p>}
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase text-gray-400 ml-2">Tool <span className="text-red-500">*</span></label>
+                <label className="text-[10px] font-black uppercase text-gray-400 ml-2">Tool <span className="text-red-600 font-bold ml-0.5" style={{ color: '#dc2626' }}>*</span></label>
                 <select 
                   className="w-full px-5 py-3.5 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl font-bold outline-none dark:text-white"
                   value={formData.tool}
@@ -161,7 +162,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onAddTutorial, existingL
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase text-gray-400 ml-2">YouTube Embed URL <span className="text-red-500">*</span></label>
+              <label className="text-[10px] font-black uppercase text-gray-400 ml-2">YouTube Embed URL <span className="text-red-600 font-bold ml-0.5" style={{ color: '#dc2626' }}>*</span></label>
               <input 
                 type="url" 
                 className={`w-full px-5 py-3.5 bg-gray-50 dark:bg-gray-800 border-2 rounded-2xl font-bold outline-none transition-all dark:text-white ${errors.videoUrl ? 'border-red-500 bg-red-50' : 'border-gray-100 dark:border-gray-700 focus:border-blue-500'}`}
