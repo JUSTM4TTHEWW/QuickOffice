@@ -37,8 +37,34 @@ interface Milestone {
 
 export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout, onUpdateUser }) => {
   const [showMilestones, setShowMilestones] = React.useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
   const [editedName, setEditedName] = React.useState(user.fullname);
+  const [editedAvatar, setEditedAvatar] = React.useState(user.avatarUrl);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const GALLERY_AVATARS = [
+    'https://picsum.photos/seed/avatar1/200/200',
+    'https://picsum.photos/seed/avatar2/200/200',
+    'https://picsum.photos/seed/avatar3/200/200',
+    'https://picsum.photos/seed/avatar4/200/200',
+    'https://picsum.photos/seed/avatar5/200/200',
+    'https://picsum.photos/seed/avatar6/200/200',
+    'https://picsum.photos/seed/avatar7/200/200',
+    'https://picsum.photos/seed/avatar8/200/200',
+  ];
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditedAvatar(reader.result as string);
+        setShowAvatarPicker(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const formattedJoinedDate = React.useMemo(() => {
     try {
@@ -72,15 +98,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout,
           >
             <div className="relative group mb-6">
               <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-full flex items-center justify-center overflow-hidden border-4 border-white dark:border-gray-700 shadow-xl">
-                {user.avatarUrl ? (
-                  <img src={user.avatarUrl} alt={user.fullname} className="w-full h-full object-cover" />
+                {(isEditing ? editedAvatar : user.avatarUrl) ? (
+                  <img src={isEditing ? editedAvatar : user.avatarUrl} alt={user.fullname} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-4xl font-black text-blue-600 dark:text-blue-400">{user.fullname[0]}</span>
+                  <span className="text-4xl font-black text-blue-600 dark:text-blue-400">{(isEditing ? editedName : user.fullname)[0]}</span>
                 )}
               </div>
-              <button className="absolute bottom-1 right-1 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white border-4 border-white dark:border-gray-700 shadow-lg hover:scale-110 transition-transform">
-                <Camera className="w-4 h-4" />
-              </button>
+              {isEditing && (
+                <button 
+                  onClick={() => setShowAvatarPicker(true)}
+                  className="absolute bottom-1 right-1 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white border-4 border-white dark:border-gray-700 shadow-lg hover:scale-110 transition-transform"
+                >
+                  <Camera className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {isEditing ? (
@@ -95,7 +126,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout,
                 <div className="flex gap-2">
                   <button 
                     onClick={() => {
-                      onUpdateUser({ ...user, fullname: editedName });
+                      onUpdateUser({ ...user, fullname: editedName, avatarUrl: editedAvatar });
                       setIsEditing(false);
                     }}
                     className="flex-1 py-2 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-[0_4px_0_0_#1d4ed8]"
@@ -105,6 +136,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout,
                   <button 
                     onClick={() => {
                       setEditedName(user.fullname);
+                      setEditedAvatar(user.avatarUrl);
                       setIsEditing(false);
                     }}
                     className="flex-1 py-2 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-xl font-black text-[10px] uppercase tracking-widest"
@@ -303,6 +335,79 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout,
                         </div>
                       </div>
                     ))}
+                  </div>
+                </MotionDiv>
+              </div>
+            )}
+          </AnimatePresence>
+
+          {/* Avatar Picker Modal */}
+          <AnimatePresence>
+            {showAvatarPicker && (
+              <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+                <MotionDiv 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowAvatarPicker(false)}
+                  className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                />
+                <MotionDiv 
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  className="relative w-full max-w-lg bg-white dark:bg-gray-950 rounded-[2.5rem] border-4 border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden flex flex-col"
+                >
+                  <div className="p-8 border-b-2 border-gray-50 dark:border-gray-900 flex items-center justify-between bg-gray-50 dark:bg-gray-900">
+                    <div>
+                      <h2 className="text-2xl font-black text-gray-800 dark:text-white">Choose Avatar</h2>
+                      <p className="text-gray-400 font-bold text-sm">Select from gallery or upload your own</p>
+                    </div>
+                    <button onClick={() => setShowAvatarPicker(false)} className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-full shadow-sm">
+                      <X size={24} />
+                    </button>
+                  </div>
+                  
+                  <div className="p-8 space-y-8">
+                    {/* Upload Section */}
+                    <div>
+                      <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Upload Custom</h3>
+                      <input 
+                        type="file" 
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                      <button 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full py-4 bg-gray-50 dark:bg-gray-800 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl flex items-center justify-center gap-3 text-gray-500 dark:text-gray-400 font-bold hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        <Camera className="w-5 h-5" />
+                        Upload Image
+                      </button>
+                    </div>
+
+                    {/* Gallery Section */}
+                    <div>
+                      <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Gallery</h3>
+                      <div className="grid grid-cols-4 gap-3">
+                        {GALLERY_AVATARS.map((url, i) => (
+                          <button
+                            key={i}
+                            onClick={() => {
+                              setEditedAvatar(url);
+                              setShowAvatarPicker(false);
+                            }}
+                            className={`aspect-square rounded-2xl overflow-hidden border-4 transition-all hover:scale-105 ${
+                              editedAvatar === url ? 'border-blue-600' : 'border-transparent'
+                            }`}
+                          >
+                            <img src={url} alt={`Avatar ${i}`} className="w-full h-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </MotionDiv>
               </div>

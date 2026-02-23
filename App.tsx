@@ -11,6 +11,7 @@ import { AdminPanel } from '@/components/AdminPanel';
 import { Dashboard } from '@/components/Dashboard';
 import { LearnSidePanel } from '@/components/LearnSidePanel';
 import { Guidebook } from '@/components/Guidebook';
+import { QuickOfficeLogo } from '@/components/Logo';
 import { UserStats, OfficeTool, Lesson, User } from './types';
 import { INITIAL_LESSONS, TOOLS_CONFIG } from './constants';
 import { Map as MapIcon, BookOpen, Database as DbIcon, AlertCircle } from 'lucide-react';
@@ -30,6 +31,7 @@ const App: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [customLessons, setCustomLessons] = useState<Lesson[]>([]);
   const [dbConnected, setDbConnected] = useState<boolean | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('quickoffice_theme') === 'dark';
   });
@@ -83,6 +85,11 @@ const App: React.FC = () => {
         const savedLessons = JSON.parse(localStorage.getItem('quickoffice_custom_lessons') || '[]');
         setCustomLessons(savedLessons);
       }
+
+      // Ensure splash screen shows for at least 2 seconds for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      setIsInitializing(false);
     };
     
     initData();
@@ -103,6 +110,11 @@ const App: React.FC = () => {
     localStorage.setItem('quickoffice_user', JSON.stringify(user));
     setActiveTab('learn');
     setIsAuthModalOpen(false);
+  };
+
+  const handleUpdateUser = (updatedUser: User) => {
+    setCurrentUser(updatedUser);
+    localStorage.setItem('quickoffice_user', JSON.stringify(updatedUser));
   };
 
   const handleLogout = () => {
@@ -262,6 +274,19 @@ const App: React.FC = () => {
     });
   };
 
+  if (isInitializing) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center bg-white dark:bg-gray-950 ${isDarkMode ? 'dark' : ''}`}>
+        <motion.div 
+          animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+        >
+          <QuickOfficeLogo className="w-24 h-24" />
+        </motion.div>
+      </div>
+    );
+  }
+
   if (!currentUser) {
     return (
       <div className={`relative ${isDarkMode ? 'dark' : ''}`}>
@@ -358,7 +383,7 @@ const App: React.FC = () => {
         )}
 
         {activeTab === 'tutorials' && <TutorialLibrary customLessons={customLessons} />}
-        {activeTab === 'profile' && currentUser && <ProfileView user={currentUser} stats={stats} onLogout={handleLogout} />}
+        {activeTab === 'profile' && currentUser && <ProfileView user={currentUser} stats={stats} onLogout={handleLogout} onUpdateUser={handleUpdateUser} />}
         {activeTab === 'settings' && <SettingsView stats={stats} setStats={setStats} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />}
         {activeTab === 'admin' && currentUser?.role === 'admin' && (
           <AdminPanel 
