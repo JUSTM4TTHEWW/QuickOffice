@@ -14,7 +14,7 @@ import { Guidebook } from '@/components/Guidebook';
 import { UserStats, OfficeTool, Lesson, User } from './types';
 import { INITIAL_LESSONS, TOOLS_CONFIG } from './constants';
 import { Map as MapIcon, BookOpen, Database as DbIcon, AlertCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { api } from './services/api';
 
 const MotionDiv = motion.div as any;
@@ -32,6 +32,10 @@ const App: React.FC = () => {
   const [dbConnected, setDbConnected] = useState<boolean | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('quickoffice_theme') === 'dark';
+  });
+  const [notifications, setNotifications] = useState<{ id: string; title: string; date: string; read: boolean }[]>(() => {
+    const saved = localStorage.getItem('quickoffice_notifications');
+    return saved ? JSON.parse(saved) : [];
   });
   
   const [stats, setStats] = useState<UserStats>(() => {
@@ -117,6 +121,19 @@ const App: React.FC = () => {
       }
     }
     setCustomLessons(prev => [...prev, lesson]);
+    
+    // Add notification
+    const newNotif = {
+      id: `notif-${Date.now()}`,
+      title: `New Tutorial: ${lesson.title}`,
+      date: new Date().toLocaleDateString(),
+      read: false
+    };
+    setNotifications(prev => {
+      const updated = [newNotif, ...prev].slice(0, 10);
+      localStorage.setItem('quickoffice_notifications', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const handleDeleteTutorial = async (id: string) => {
@@ -128,6 +145,20 @@ const App: React.FC = () => {
       }
     }
     setCustomLessons(prev => prev.filter(l => l.id !== id));
+  };
+
+  const handleAddAnnouncement = (title: string, message: string) => {
+    const newNotif = {
+      id: `ann-${Date.now()}`,
+      title: `Admin: ${title}`,
+      date: new Date().toLocaleDateString(),
+      read: false
+    };
+    setNotifications(prev => {
+      const updated = [newNotif, ...prev].slice(0, 10);
+      localStorage.setItem('quickoffice_notifications', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const allLessons = [...INITIAL_LESSONS, ...customLessons];
@@ -254,7 +285,14 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen bg-white dark:bg-gray-950 flex flex-col lg:flex-row selection:bg-blue-100 dark:selection:bg-blue-900 relative overflow-hidden ${isDarkMode ? 'dark' : ''}`}>
-      <Sidebar activeTab={activeTab} setActiveTab={(id) => setActiveTab(id)} currentUser={currentUser} stats={stats} />
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={(id) => setActiveTab(id)} 
+        currentUser={currentUser} 
+        stats={stats} 
+        notifications={notifications}
+        setNotifications={setNotifications}
+      />
       
       {/* DB Sync Indicator (Overlay) */}
       {dbConnected === false && activeTab === 'learn' && (
@@ -312,9 +350,6 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="w-full relative flex flex-col items-center py-10">
-                  {/* Decorative Path Line (Background) */}
-                  <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-2 bg-gray-50 dark:bg-gray-900/50 rounded-full -z-0" />
-                  
                   {renderRoadmap()}
                 </div>
             </div>
@@ -326,7 +361,12 @@ const App: React.FC = () => {
         {activeTab === 'profile' && currentUser && <ProfileView user={currentUser} stats={stats} onLogout={handleLogout} />}
         {activeTab === 'settings' && <SettingsView stats={stats} setStats={setStats} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />}
         {activeTab === 'admin' && currentUser?.role === 'admin' && (
-          <AdminPanel onAddTutorial={handleAddTutorial} existingLessons={[...INITIAL_LESSONS, ...customLessons]} onDeleteTutorial={handleDeleteTutorial} />
+          <AdminPanel 
+            onAddTutorial={handleAddTutorial} 
+            onAddAnnouncement={handleAddAnnouncement}
+            existingLessons={[...INITIAL_LESSONS, ...customLessons]} 
+            onDeleteTutorial={handleDeleteTutorial} 
+          />
         )}
       </main>
 

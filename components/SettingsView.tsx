@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { 
   Settings, 
   User, 
@@ -89,7 +89,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
   );
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 lg:py-12">
+    <div className="max-w-4xl mx-auto px-4 py-8 lg:py-12 pb-32">
       <div className="space-y-4 mb-10 sm:mb-12">
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest">
           <Settings className="w-3.5 h-3.5" /> Preferences
@@ -119,16 +119,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
                 </div>
              </div>
           </div>
-          <button 
-            onClick={handleSave}
-            disabled={isSaving}
-            className={`w-full sm:w-auto px-8 py-3 rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_4px_0_0_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 ${
-              saveSuccess ? 'bg-green-600 text-white' : 'bg-blue-600 dark:bg-blue-500 text-white'
-            }`}
-          >
-            {isSaving ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}><Save className="w-4 h-4" /></motion.div> : saveSuccess ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-            {isSaving ? 'Saving...' : saveSuccess ? 'Changes Saved!' : 'Save Changes'}
-          </button>
         </MotionDiv>
 
         {/* Application Preferences */}
@@ -181,21 +171,38 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
                 <option>Spanish</option>
               </select>
             </SettingRow>
+          </div>
+        </MotionDiv>
+
+        {/* Privacy & Security */}
+        <MotionDiv 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-sm"
+        >
+          <h3 className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+            <Shield className="w-3 h-3" /> Privacy & Security
+          </h3>
+          <div className="divide-y divide-gray-50 dark:divide-gray-800">
             <SettingRow 
-              icon={Type} 
-              label="Font Size" 
-              description="Adjust the text size for better readability."
+              icon={User} 
+              label="Public Profile" 
+              description="Allow other users to see your progress and badges."
             >
-              <select className="bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl px-3 py-1.5 font-bold text-xs outline-none dark:text-white">
-                <option>Small</option>
-                <option>Medium</option>
-                <option>Large</option>
-              </select>
+              <Toggle active={true} onToggle={() => {}} />
+            </SettingRow>
+            <SettingRow 
+              icon={Bell} 
+              label="Marketing Emails" 
+              description="Receive updates about new features and tutorials."
+            >
+              <Toggle active={false} onToggle={() => {}} />
             </SettingRow>
           </div>
         </MotionDiv>
 
-        {/* Data & Security */}
+        {/* Data & Storage */}
         <MotionDiv 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -244,6 +251,34 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
             </div>
           </div>
         </MotionDiv>
+
+        {/* Sticky Save Bar */}
+        <div className="fixed bottom-24 left-0 right-0 lg:left-64 p-4 z-40">
+           <div className="max-w-4xl mx-auto">
+              <MotionDiv 
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-2 border-gray-100 dark:border-gray-800 p-4 rounded-3xl shadow-2xl flex items-center justify-between gap-4"
+              >
+                 <div className="hidden sm:flex items-center gap-3 ml-4">
+                    <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-600">
+                       <Info size={20} />
+                    </div>
+                    <p className="text-xs font-bold text-gray-500">Unsaved changes will be lost if you leave.</p>
+                 </div>
+                 <button 
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className={`w-full sm:w-auto px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_4px_0_0_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-3 ${
+                    saveSuccess ? 'bg-green-600 text-white' : 'bg-blue-600 dark:bg-blue-500 text-white'
+                  }`}
+                >
+                  {isSaving ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}><Save className="w-5 h-5" /></motion.div> : saveSuccess ? <CheckCircle2 className="w-5 h-5" /> : <Save className="w-5 h-5" />}
+                  {isSaving ? 'Saving...' : saveSuccess ? 'Changes Saved!' : 'Save All Changes'}
+                </button>
+              </MotionDiv>
+           </div>
+        </div>
 
         {/* About / Info */}
         <div className="flex flex-col sm:flex-row justify-between items-center px-4 py-8 text-gray-400 dark:text-gray-600 gap-4">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NAV_ITEMS, TOOLS_CONFIG, INITIAL_LESSONS } from '@/constants';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { User as UserIcon, Sparkles, Mail, Notebook, BarChart3, LogIn, ShieldCheck, Settings, Zap, Bell } from 'lucide-react';
 import { User, UserStats } from '@/types';
 import { QuickOfficeLogo } from './Logo';

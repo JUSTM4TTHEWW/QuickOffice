@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { Flame, Sparkles, Trophy, Target, TrendingUp, Cpu, Timer, Info } from 'lucide-react';
 import { UserStats } from '@/types';
 

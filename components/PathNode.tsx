@@ -2,7 +2,7 @@
 import React from 'react';
 import { Lock, Check, Play } from 'lucide-react';
 import { OfficeTool } from '@/types';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 const MotionDiv = motion.div as any;
 const MotionButton = motion.button as any;
@@ -30,15 +30,29 @@ export const PathNode: React.FC<PathNodeProps> = ({ title, tool, status, onClick
 
   const colors = toolColors[tool as keyof typeof toolColors] || toolColors.Placement;
 
-  // Stable snake positioning logic based on lesson index
-  // Even indexes shift left, Odd indexes shift right
-  const isEven = index % 2 === 0;
-  const xOffset = isEven ? '-translateX-10' : 'translateX-10';
-  const mobileXOffset = isEven ? '-translate-x-5' : 'translate-x-5';
-  const desktopXOffset = isEven ? '-translate-x-12' : 'translate-x-12';
+  // Snake pattern logic: 0, 1, 2, 1, 0, -1, -2, -1
+  const getSnakeOffset = (i: number) => {
+    const pattern = [0, 1, 2, 1, 0, -1, -2, -1];
+    return pattern[i % pattern.length];
+  };
+
+  const offsetMultiplier = getSnakeOffset(index);
+  
+  // Map multiplier to Tailwind translate classes
+  const getTranslateClass = (multiplier: number) => {
+    switch (multiplier) {
+      case 2: return 'translate-x-16 sm:translate-x-24';
+      case 1: return 'translate-x-8 sm:translate-x-12';
+      case -1: return '-translate-x-8 sm:-translate-x-12';
+      case -2: return '-translate-x-16 sm:-translate-x-24';
+      default: return 'translate-x-0';
+    }
+  };
+
+  const translateClass = getTranslateClass(offsetMultiplier);
 
   return (
-    <div className={`flex flex-col items-center mb-10 sm:mb-12 transition-all duration-300 ${desktopXOffset} sm:${desktopXOffset} ${mobileXOffset}`}>
+    <div className={`flex flex-col items-center mb-12 sm:mb-16 transition-all duration-500 ease-in-out ${translateClass}`}>
       <div className="relative group">
         {/* Subtle background pulse for Available nodes */}
         {isAvailable && (

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, Mail, Lock, User as UserIcon, ArrowRight, AlertCircle, Loader2, Eye, EyeOff, UserPlus, LogIn, ChevronLeft, CheckCircle2, Zap } from 'lucide-react';
 import { User } from '@/types';
 import { api } from '@/services/api';

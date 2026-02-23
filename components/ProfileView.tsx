@@ -16,7 +16,7 @@ import {
   CheckCircle2,
   Clock
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 const MotionDiv = motion.div as any;
 
@@ -38,11 +38,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout 
   const [showMilestones, setShowMilestones] = React.useState(false);
 
   const milestones: Milestone[] = [
-    { id: 'm1', title: 'First Steps', description: 'Complete your first lesson.', obtained: stats.completedLessons.length > 0, date: stats.completedLessons.length > 0 ? '2026-02-20' : undefined },
-    { id: 'm2', title: 'Power User', description: 'Complete 5 lessons.', obtained: stats.completedLessons.length >= 5, date: stats.completedLessons.length >= 5 ? '2026-02-21' : undefined },
-    { id: 'm3', title: 'Excel Wizard', description: 'Complete all Excel core lessons.', obtained: stats.completedLessons.filter(id => id.includes('excel')).length >= 3, date: undefined },
-    { id: 'm4', title: 'Word Smith', description: 'Complete all Word core lessons.', obtained: stats.completedLessons.filter(id => id.includes('word')).length >= 3, date: undefined },
-    { id: 'm5', title: 'Slide Master', description: 'Complete all PowerPoint core lessons.', obtained: stats.completedLessons.filter(id => id.includes('ppt')).length >= 3, date: undefined },
+    { id: 'm1', title: 'First Steps', description: 'Complete your first lesson.', obtained: stats.completedLessons.length > 0, date: stats.completedLessons.length > 0 ? 'Feb 20, 2026' : undefined },
+    { id: 'm2', title: 'Power User', description: 'Complete 5 lessons.', obtained: stats.completedLessons.length >= 5, date: stats.completedLessons.length >= 5 ? 'Feb 21, 2026' : undefined },
+    { id: 'm3', title: 'Excel Wizard', description: 'Complete all Excel core lessons.', obtained: stats.completedLessons.filter(id => id.includes('excel')).length >= 3, date: stats.completedLessons.filter(id => id.includes('excel')).length >= 3 ? 'Feb 22, 2026' : undefined },
+    { id: 'm4', title: 'Word Smith', description: 'Complete all Word core lessons.', obtained: stats.completedLessons.filter(id => id.includes('word')).length >= 3, date: stats.completedLessons.filter(id => id.includes('word')).length >= 3 ? 'Feb 23, 2026' : undefined },
+    { id: 'm5', title: 'Slide Master', description: 'Complete all PowerPoint core lessons.', obtained: stats.completedLessons.filter(id => id.includes('ppt')).length >= 3, date: stats.completedLessons.filter(id => id.includes('ppt')).length >= 3 ? 'Feb 24, 2026' : undefined },
   ];
 
   return (
@@ -219,12 +219,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout 
                   exit={{ opacity: 0, scale: 0.9, y: 20 }}
                   className="relative w-full max-w-2xl bg-white dark:bg-gray-950 rounded-[2.5rem] border-4 border-gray-100 dark:border-gray-800 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
                 >
-                  <div className="p-8 border-b-2 border-gray-50 dark:border-gray-900 flex items-center justify-between">
+                  <div className="p-8 border-b-2 border-gray-50 dark:border-gray-900 flex items-center justify-between bg-gray-50 dark:bg-gray-900">
                     <div>
                       <h2 className="text-2xl font-black text-gray-800 dark:text-white">Learning Path Milestones</h2>
                       <p className="text-gray-400 font-bold text-sm">Track your progress through the curriculum</p>
                     </div>
-                    <button onClick={() => setShowMilestones(false)} className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                    <button onClick={() => setShowMilestones(false)} className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors bg-white dark:bg-gray-800 rounded-full shadow-sm">
                       <X size={24} />
                     </button>
                   </div>
@@ -235,17 +235,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout 
                           ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900/40' 
                           : 'bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800 opacity-60'
                       }`}>
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
                           m.obtained ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-800 text-gray-400'
                         }`}>
                           {m.obtained ? <CheckCircle2 size={28} /> : <Clock size={28} />}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-1">
-                            <h4 className={`font-black uppercase tracking-wide ${m.obtained ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`}>
+                            <h4 className={`text-[10px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full ${m.obtained ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'}`}>
                               {m.obtained ? 'Obtained' : 'Not Obtained'}
                             </h4>
-                            {m.date && <span className="text-[10px] font-black text-gray-400 bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full">{m.date}</span>}
+                            {m.date && <span className="text-[10px] font-black text-gray-400 bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full border border-gray-100 dark:border-gray-700">{m.date}</span>}
                           </div>
                           <h3 className="text-xl font-black text-gray-800 dark:text-white">{m.title}</h3>
                           <p className="text-sm font-bold text-gray-400 dark:text-gray-500">{m.description}</p>

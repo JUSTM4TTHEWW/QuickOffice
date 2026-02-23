@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { INITIAL_LESSONS, TOOLS_CONFIG } from '@/constants';
 import { OfficeTool, Lesson } from '@/types';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sparkles, 
   Lightbulb, 

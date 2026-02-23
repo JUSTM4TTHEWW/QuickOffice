@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Lesson, Question, QuestionType, Difficulty } from '@/types';
 import { CheckCircle2, XCircle, Loader2, Trophy, Sparkles, BookOpen, ChevronRight, Lightbulb, Clock, Heart, AlertCircle, RotateCcw, MousePointer2, RefreshCw, Layers, Monitor, ChevronLeft, GripVertical, Check, Info, ArrowRight, Star, Play, LogOut } from 'lucide-react';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { motion, AnimatePresence, Reorder } from 'motion/react';
 
 const MotionDiv = motion.div as any;
 const MotionButton = motion.button as any;

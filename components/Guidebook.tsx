@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Book, X, ChevronRight, Info, Search, Zap, ExternalLink, ArrowRight, HelpCircle, CheckCircle, Sparkles, Target, MousePointer2 } from 'lucide-react';
 import { OfficeTool } from '@/types';
 import { GUIDEBOOK_DATA, TOOLS_CONFIG } from '@/constants';
