@@ -160,17 +160,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
             >
               <Toggle active={remindersEnabled} onToggle={() => setRemindersEnabled(!remindersEnabled)} />
             </SettingRow>
-            <SettingRow 
-              icon={Languages} 
-              label="Language" 
-              description="Select your preferred interface language."
-            >
-              <select className="bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl px-3 py-1.5 font-bold text-xs outline-none dark:text-white">
-                <option>English (US)</option>
-                <option>Filipino</option>
-                <option>Spanish</option>
-              </select>
-            </SettingRow>
           </div>
         </MotionDiv>
 
@@ -264,7 +253,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
                     <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-600">
                        <Info size={20} />
                     </div>
-                    <p className="text-xs font-bold text-gray-500">Unsaved changes will be lost if you leave.</p>
                  </div>
                  <button 
                   onClick={handleSave}

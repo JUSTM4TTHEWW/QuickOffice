@@ -147,7 +147,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                   <div className="text-center">
                     <QuickOfficeLogo className="w-20 h-20 mx-auto mb-6 shadow-2xl" iconClassName="w-10 h-10" />
                     <h1 className="text-4xl font-black text-gray-900 dark:text-white">Welcome Back</h1>
-                    <p className="text-gray-400 font-bold mt-2">Log in to sync your progress</p>
                   </div>
                   
                   {errors.general && (
@@ -204,8 +203,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                       <ChevronLeft size={16}/> Back
                     </button>
                     <QuickOfficeLogo className="w-20 h-20 mx-auto mb-6 shadow-2xl" iconClassName="w-10 h-10" />
-                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">Join the Quest</h1>
-                    <p className="text-gray-400 font-bold mt-2">Persistence in Postgres</p>
+                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">Create your profile</h1>
                   </div>
 
                   {errors.general && (

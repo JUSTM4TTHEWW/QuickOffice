@@ -36,6 +36,18 @@ interface Milestone {
 
 export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout }) => {
   const [showMilestones, setShowMilestones] = React.useState(false);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editedName, setEditedName] = React.useState(user.fullname);
+
+  const formattedJoinedDate = React.useMemo(() => {
+    try {
+      const date = new Date(user.joinedDate);
+      if (isNaN(date.getTime())) return user.joinedDate;
+      return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    } catch {
+      return user.joinedDate;
+    }
+  }, [user.joinedDate]);
 
   const milestones: Milestone[] = [
     { id: 'm1', title: 'First Steps', description: 'Complete your first lesson.', obtained: stats.completedLessons.length > 0, date: stats.completedLessons.length > 0 ? 'Feb 20, 2026' : undefined },
@@ -69,7 +81,39 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout 
               </button>
             </div>
 
-            <h2 className="text-2xl font-black text-gray-800 dark:text-white mb-1">{user.fullname}</h2>
+            {isEditing ? (
+              <div className="w-full space-y-2 mb-4">
+                <input 
+                  type="text" 
+                  value={editedName} 
+                  onChange={(e) => setEditedName(e.target.value)}
+                  className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border-2 border-blue-500 rounded-xl font-bold outline-none text-center dark:text-white"
+                  placeholder="Full Name"
+                />
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => {
+                      user.fullname = editedName; // Note: In a real app, this would be an API call
+                      setIsEditing(false);
+                    }}
+                    className="flex-1 py-2 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-[0_4px_0_0_#1d4ed8]"
+                  >
+                    Save
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setEditedName(user.fullname);
+                      setIsEditing(false);
+                    }}
+                    className="flex-1 py-2 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-xl font-black text-[10px] uppercase tracking-widest"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <h2 className="text-2xl font-black text-gray-800 dark:text-white mb-1">{user.fullname}</h2>
+            )}
             <p className="text-gray-400 dark:text-gray-500 font-bold mb-6">{user.email}</p>
 
             <div className="w-full grid grid-cols-2 gap-3 mb-8">
@@ -92,7 +136,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout 
             <div className="w-full space-y-3">
               <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-all">
                 <Calendar className="w-5 h-5 text-gray-400" />
-                <span className="text-sm">Joined {user.joinedDate}</span>
+                <span className="text-sm">Joined {formattedJoinedDate}</span>
               </div>
             </div>
 
@@ -117,9 +161,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout 
             <hr className="w-full my-8 border-gray-100 dark:border-gray-800" />
 
             <div className="w-full flex gap-3">
-              <button className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
-                <Settings className="w-4 h-4" /> Edit
-              </button>
+              {!isEditing && (
+                <button 
+                  onClick={() => setIsEditing(true)}
+                  className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Settings className="w-4 h-4" /> Edit
+                </button>
+              )}
               <button 
                 onClick={onLogout}
                 className="flex-1 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors flex items-center justify-center gap-2"
