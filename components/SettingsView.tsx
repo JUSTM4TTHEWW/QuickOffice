@@ -98,29 +98,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
       </div>
 
       <div className="space-y-8">
-        {/* Account Section */}
-        <MotionDiv 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-sm"
-        >
-          <h3 className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-            <User className="w-3 h-3" /> Account Profile
-          </h3>
-          <div className="space-y-2 mb-8">
-             <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 space-y-1.5">
-                   <label className="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 ml-2">Display Name <span className="text-red-600 font-bold ml-0.5" style={{ color: '#dc2626' }}>*</span></label>
-                   <input type="text" placeholder="Your name" className="w-full px-5 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl font-bold outline-none focus:border-blue-500 dark:focus:border-blue-400 dark:text-white transition-all" />
-                </div>
-                <div className="flex-1 space-y-1.5">
-                   <label className="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 ml-2">Email Address <span className="text-red-600 font-bold ml-0.5" style={{ color: '#dc2626' }}>*</span></label>
-                   <input type="email" placeholder="email@example.com" className="w-full px-5 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl font-bold outline-none focus:border-blue-500 dark:focus:border-blue-400 dark:text-white transition-all" />
-                </div>
-             </div>
-          </div>
-        </MotionDiv>
-
         {/* Application Preferences */}
         <MotionDiv 
           initial={{ opacity: 0, y: 20 }}
@@ -240,33 +217,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
             </div>
           </div>
         </MotionDiv>
-
-        {/* Sticky Save Bar */}
-        <div className="fixed bottom-24 left-0 right-0 lg:left-64 p-4 z-40">
-           <div className="max-w-4xl mx-auto">
-              <MotionDiv 
-                initial={{ y: 100 }}
-                animate={{ y: 0 }}
-                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-2 border-gray-100 dark:border-gray-800 p-4 rounded-3xl shadow-2xl flex items-center justify-between gap-4"
-              >
-                 <div className="hidden sm:flex items-center gap-3 ml-4">
-                    <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-600">
-                       <Info size={20} />
-                    </div>
-                 </div>
-                 <button 
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className={`w-full sm:w-auto px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_4px_0_0_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-3 ${
-                    saveSuccess ? 'bg-green-600 text-white' : 'bg-blue-600 dark:bg-blue-500 text-white'
-                  }`}
-                >
-                  {isSaving ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}><Save className="w-5 h-5" /></motion.div> : saveSuccess ? <CheckCircle2 className="w-5 h-5" /> : <Save className="w-5 h-5" />}
-                  {isSaving ? 'Saving...' : saveSuccess ? 'Changes Saved!' : 'Save All Changes'}
-                </button>
-              </MotionDiv>
-           </div>
-        </div>
 
         {/* About / Info */}
         <div className="flex flex-col sm:flex-row justify-between items-center px-4 py-8 text-gray-400 dark:text-gray-600 gap-4">

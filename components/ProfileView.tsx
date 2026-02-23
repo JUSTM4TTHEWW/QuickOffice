@@ -24,6 +24,7 @@ interface ProfileViewProps {
   user: User;
   stats: UserStats;
   onLogout: () => void;
+  onUpdateUser: (user: User) => void;
 }
 
 interface Milestone {
@@ -34,18 +35,19 @@ interface Milestone {
   obtained: boolean;
 }
 
-export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout }) => {
+export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout, onUpdateUser }) => {
   const [showMilestones, setShowMilestones] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
   const [editedName, setEditedName] = React.useState(user.fullname);
 
   const formattedJoinedDate = React.useMemo(() => {
     try {
-      const date = new Date(user.joinedDate);
-      if (isNaN(date.getTime())) return user.joinedDate;
+      const dateStr = user.joinedDate || new Date().toISOString();
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return "February 23, 2026";
       return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     } catch {
-      return user.joinedDate;
+      return "February 23, 2026";
     }
   }, [user.joinedDate]);
 
@@ -93,7 +95,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout 
                 <div className="flex gap-2">
                   <button 
                     onClick={() => {
-                      user.fullname = editedName; // Note: In a real app, this would be an API call
+                      onUpdateUser({ ...user, fullname: editedName });
                       setIsEditing(false);
                     }}
                     className="flex-1 py-2 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-[0_4px_0_0_#1d4ed8]"
