@@ -25,10 +25,13 @@ if (!connectionString) {
 }
 
 const pool = new Pool({
-  connectionString: connectionString,
-  ssl: connectionString && !connectionString.includes('localhost') 
-       ? { rejectUnauthorized: false } 
-       : false,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false // allows connection even if certificate is self-signed
+  },
+  max: 5, // serverless-friendly
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000
 });
 
 app.use(cors());
