@@ -24,12 +24,11 @@ if (!connectionString) {
   console.error('CRITICAL: No database connection string found in environment variables (DATABASE_URL, POSTGRES_URL, etc.)');
 }
 
-const pool = new Pool(connectionString ? {
-  connectionString,
-  ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: false }
-} : {
-  // Fallback to empty config to prevent immediate crash, 
-  // but health check will catch the missing string
+const pool = new Pool({
+  connectionString: connectionString,
+  ssl: connectionString && !connectionString.includes('localhost') 
+       ? { rejectUnauthorized: false } 
+       : false,
 });
 
 app.use(cors());
