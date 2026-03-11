@@ -25,13 +25,8 @@ if (!connectionString) {
 }
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false // allows connection even if certificate is self-signed
-  },
-  max: 5, // serverless-friendly
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000
+  connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING,
+  ssl: { rejectUnauthorized: false }
 });
 
 app.use(cors());
@@ -144,13 +139,21 @@ const seedDb = async () => {
   }
 };
 
-initDb().then(() => seedDb());
+let dbInitialized = false;
+
+const ensureDb = async () => {
+  if (dbInitialized) return;
+  await initDb();
+  await seedDb();
+  dbInitialized = true;
+};
 
 // --- API Routes ---
 
 // Health Check
 app.get('/api/health', async (req, res) => {
   try {
+    await ensureDb();
     if (!connectionString) {
       return res.status(500).json({ 
         status: 'error', 
@@ -335,11 +338,13 @@ app.delete('/api/lessons/:id', async (req, res) => {
 
 // Vite Middleware for Development
 if (process.env.NODE_ENV !== 'production') {
-  const vite = await createViteServer({
-    server: { middlewareMode: true },
-    appType: 'spa',
-  });
-  app.use(vite.middlewares);
+  (async () => {
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  })();
 } else {
   app.use(express.static('dist'));
   app.get('*', (req, res) => {
