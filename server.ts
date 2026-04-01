@@ -5,8 +5,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import path from 'path';
 
-dotenv.config();
+dotenv.config({ override: true });
 
 // Set timezone to Philippines
 process.env.TZ = 'Asia/Manila';
@@ -24,9 +25,12 @@ if (!connectionString) {
   console.error('CRITICAL: No database connection string found in environment variables (DATABASE_URL, POSTGRES_URL, etc.)');
 }
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING,
-  ssl: { rejectUnauthorized: false }
+const pool = new Pool(connectionString ? {
+  connectionString,
+  ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: false }
+} : {
+  // Fallback to empty config to prevent immediate crash, 
+  // but health check will catch the missing string
 });
 
 app.use(cors());
@@ -139,21 +143,13 @@ const seedDb = async () => {
   }
 };
 
-let dbInitialized = false;
-
-const ensureDb = async () => {
-  if (dbInitialized) return;
-  await initDb();
-  await seedDb();
-  dbInitialized = true;
-};
+initDb().then(() => seedDb());
 
 // --- API Routes ---
 
 // Health Check
 app.get('/api/health', async (req, res) => {
   try {
-    await ensureDb();
     if (!connectionString) {
       return res.status(500).json({ 
         status: 'error', 
@@ -162,7 +158,7 @@ app.get('/api/health', async (req, res) => {
     }
     const dbCheck = await pool.query('SELECT 1');
     res.json({ status: 'ok', database: 'connected', timestamp: new Date() });
-  } catch (err) {
+  } catch (err: any) {
     console.error('Health check DB error:', err.message);
     res.status(500).json({ 
       status: 'error', 
@@ -185,7 +181,7 @@ app.get('/api/admin/db-stats', async (req, res) => {
       tutorials: parseInt(tutorialsCount.rows[0].count),
       stats: parseInt(statsCount.rows[0].count)
     });
-  } catch (err) {
+  } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
 });
@@ -213,7 +209,7 @@ app.post('/api/auth/signup', async (req, res) => {
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
     res.json({ user, token });
-  } catch (err) {
+  } catch (err: any) {
     if (err.code === '23505') {
       return res.status(400).json({ message: 'Email already registered' });
     }
@@ -236,7 +232,7 @@ app.post('/api/auth/login', async (req, res) => {
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
     const { password: _, ...userWithoutPassword } = user;
     res.json({ user: userWithoutPassword, token });
-  } catch (err) {
+  } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
 });
@@ -261,7 +257,7 @@ app.get('/api/stats/:userId', async (req, res) => {
       currentTool: stats.current_tool,
       lastCompletionDate: stats.last_completion_date
     });
-  } catch (err) {
+  } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
 });
@@ -285,7 +281,7 @@ app.put('/api/stats/:userId', async (req, res) => {
       [userId, xp, streak, completedLessons, currentTool, lastCompletionDate]
     );
     res.json({ message: 'Stats updated' });
-  } catch (err) {
+  } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
 });
@@ -309,7 +305,7 @@ app.get('/api/lessons', async (req, res) => {
       performanceSteps: [],
       xpReward: 50
     })));
-  } catch (err) {
+  } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
 });
@@ -322,7 +318,7 @@ app.post('/api/lessons', async (req, res) => {
       [title, tool, tutorialContent.videoUrl, tutorialContent.points, tutorialContent.proTip, description]
     );
     res.json({ id: result.rows[0].id.toString(), message: 'Lesson saved' });
-  } catch (err) {
+  } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
 });
@@ -331,31 +327,33 @@ app.delete('/api/lessons/:id', async (req, res) => {
   try {
     await pool.query('DELETE FROM tutorials WHERE id = $1', [req.params.id]);
     res.json({ message: 'Lesson deleted' });
-  } catch (err) {
+  } catch (err: any) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Vite Middleware for Development
-if (process.env.NODE_ENV !== 'production') {
-  (async () => {
+// --- Server Startup ---
+async function startServer() {
+  // Vite Middleware for Development
+  if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);
-  })();
-} else {
-  app.use(express.static('dist'));
-  app.get('*', (req, res) => {
-    res.sendFile('dist/index.html', { root: '.' });
-  });
-}
+  } else {
+    const distPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(distPath));
+    app.get('*all', (req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
 
-if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
+
+startServer();
 
 export default app;

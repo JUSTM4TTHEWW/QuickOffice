@@ -1,7 +1,89 @@
 
 import React from 'react';
-import { Table, FileText, Presentation, LayoutDashboard, BookOpen, Target, Settings, User, Type, Image as ImageIcon, Layout, ShieldCheck, Eye, Save, Calculator, BarChart, Database, Lock, Zap, TrendingUp, HelpCircle, Sparkles, MousePointer2, List, AlignCenter, Scissors, FileCode, Search, Image, PlaySquare, Columns, BookMarked, Layers } from 'lucide-react';
+import { Table, FileText, Presentation, LayoutDashboard, BookOpen, Target, Settings, User, Type, Image as ImageIcon, Layout, ShieldCheck, Eye, Save, Calculator, BarChart, Database, Lock, Zap, TrendingUp, HelpCircle, Sparkles, MousePointer2, List, AlignCenter, Scissors, FileCode, Search, Image, PlaySquare, Columns, BookMarked, Layers, Map as MapIcon } from 'lucide-react';
 import { OfficeTool, Lesson, QuestionType, Question, Difficulty } from './types';
+
+export const QUICK_TIPS = [
+  "Shortcut: Ctrl + S = Save your work instantly!",
+  "Use Excel formulas like =SUM() to save time on calculations.",
+  "Ctrl + Z is your best friend—it undoes your last action.",
+  "In Word, double-click a word to select it, triple-click for the paragraph.",
+  "PowerPoint tip: Use the 'Design Ideas' tool for instant professional layouts.",
+  "Ctrl + C to Copy, Ctrl + V to Paste. Classic efficiency!",
+  "Freeze Panes in Excel to keep your headers visible while scrolling.",
+  "Use 'Styles' in Word to keep your document formatting consistent.",
+  "Press F5 in PowerPoint to start your presentation from the beginning.",
+  "Alt + Tab lets you switch between open windows quickly."
+];
+
+export const REAL_LIFE_CHALLENGES = [
+  {
+    id: 'c1',
+    title: 'Create a Resume',
+    tool: 'Word',
+    description: 'Design a professional resume for a job application using tables and styles.',
+    xpReward: 150,
+    difficulty: Difficulty.INTERMEDIATE
+  },
+  {
+    id: 'c2',
+    title: 'Student Budget Tracker',
+    tool: 'Excel',
+    description: 'Build a monthly budget tracker with formulas to calculate savings.',
+    xpReward: 200,
+    difficulty: Difficulty.DIFFICULT
+  },
+  {
+    id: 'c3',
+    title: 'Business Pitch Deck',
+    tool: 'PowerPoint',
+    description: 'Create a 5-slide pitch for a new startup idea with animations.',
+    xpReward: 180,
+    difficulty: Difficulty.INTERMEDIATE
+  }
+];
+
+export const BADGES_LIST = [
+  {
+    id: 'b1',
+    title: 'Excel Beginner',
+    description: 'Complete 3 Excel lessons.',
+    icon: '📊',
+    tool: 'Excel'
+  },
+  {
+    id: 'b2',
+    title: 'Word Wizard',
+    description: 'Complete 3 Word lessons.',
+    icon: '📝',
+    tool: 'Word'
+  },
+  {
+    id: 'b3',
+    title: 'PowerPoint Pro',
+    description: 'Complete 3 PowerPoint lessons.',
+    icon: '🎨',
+    tool: 'PowerPoint'
+  },
+  {
+    id: 'b4',
+    title: 'Streak Master',
+    description: 'Maintain a 7-day learning streak.',
+    icon: '🔥'
+  },
+  {
+    id: 'b5',
+    title: 'XP Millionaire',
+    description: 'Earn 1000 total XP.',
+    icon: '💰'
+  },
+  {
+    id: 'b6',
+    title: 'Challenge Conqueror',
+    description: 'Complete 3 Real-Life Challenges.',
+    icon: '🏆'
+  }
+];
 
 export const TOOLS_CONFIG = {
   Excel: {
@@ -345,7 +427,8 @@ const pptLessons: Lesson[] = [
 export const INITIAL_LESSONS: Lesson[] = [...wordLessons, ...excelLessons, ...pptLessons];
 
 export const NAV_ITEMS = [
-  { id: 'learn', label: 'Learn', icon: <LayoutDashboard className="w-6 h-6" /> },
+  { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-6 h-6" /> },
+  { id: 'learn', label: 'Roadmap', icon: <MapIcon className="w-6 h-6" /> },
   { id: 'tutorials', label: 'Tutorials', icon: <BookOpen className="w-6 h-6" /> },
   { id: 'profile', label: 'Profile', icon: <User className="w-6 h-6" /> },
   { id: 'settings', label: 'Settings', icon: <Settings className="w-6 h-6" /> },

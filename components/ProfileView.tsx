@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { User, UserStats, OfficeTool } from '@/types';
-import { TOOLS_CONFIG, INITIAL_LESSONS } from '@/constants';
+import { TOOLS_CONFIG, INITIAL_LESSONS, BADGES_LIST } from '@/constants';
 import { 
   Trophy, 
   Flame, 
@@ -14,7 +14,8 @@ import {
   Zap,
   X,
   CheckCircle2,
-  Clock
+  Clock,
+  TrendingUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -226,7 +227,46 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout,
             </div>
           </div>
 
-          {/* Detailed Mastery Bars */}
+          {/* Recent Performance */}
+      {stats.lastQuizResult && (
+        <MotionDiv
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 p-6 bg-white dark:bg-gray-900 rounded-3xl border-2 border-gray-100 dark:border-gray-800 shadow-sm"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-black text-gray-900 dark:text-white tracking-tight">Recent Performance</h3>
+            </div>
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+              {new Date(stats.lastQuizResult.date).toLocaleDateString()}
+            </span>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4 items-center">
+            <div className="flex-1 w-full">
+              <p className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-1">Last Lesson</p>
+              <p className="text-xl font-black text-gray-900 dark:text-white leading-tight">{stats.lastQuizResult.lessonTitle}</p>
+            </div>
+            
+            <div className="flex gap-4 w-full sm:w-auto">
+              <div className="flex-1 sm:flex-none bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-2xl border-2 border-green-100 dark:border-green-900/30 text-center">
+                <p className="text-[9px] font-black text-green-600 uppercase tracking-widest">Accuracy</p>
+                <p className="text-lg font-black text-green-700 dark:text-green-400">{Math.round(stats.lastQuizResult.accuracy * 100)}%</p>
+              </div>
+              <div className="flex-1 sm:flex-none bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-2xl border-2 border-blue-100 dark:border-blue-900/30 text-center">
+                <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest">XP Earned</p>
+                <p className="text-lg font-black text-blue-700 dark:text-blue-400">+{stats.lastQuizResult.xpEarned}</p>
+              </div>
+            </div>
+          </div>
+        </MotionDiv>
+      )}
+
+      {/* Detailed Mastery Bars */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {(['Excel', 'Word', 'PowerPoint'] as OfficeTool[]).map(tool => {
               const config = TOOLS_CONFIG[tool as keyof typeof TOOLS_CONFIG];
@@ -264,25 +304,45 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onLogout,
             })}
           </div>
 
-          {/* Achievements Section */}
-          <div className="bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center">
-             <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
-                <Trophy className={`w-10 h-10 ${stats.completedLessons.length >= 5 ? 'text-yellow-500' : 'text-gray-200 dark:text-gray-700'}`} />
-             </div>
-             <h3 className="text-xl font-black text-gray-800 dark:text-white mb-2">
-               {stats.completedLessons.length >= 5 ? 'Rising Star' : 'No Achievements Yet'}
-             </h3>
-             <p className="text-gray-400 dark:text-gray-500 font-bold max-w-sm mb-8">
-               {stats.completedLessons.length >= 5 
-                 ? "You've completed more than 5 lessons! Keep going to unlock the Office Guru badge." 
-                 : "Keep learning to earn badges and special office tool honors! Finish your first stage in any tool to get started."}
-             </p>
-             <button 
-               onClick={() => setShowMilestones(true)}
-               className="px-8 py-4 bg-blue-600 dark:bg-blue-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_4px_0_0_#1d4ed8] dark:shadow-[0_4px_0_0_#2563eb] active:scale-95 transition-transform"
-             >
-                Go to Learning Path
-             </button>
+          {/* Badges Section */}
+          <div className="bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-[2.5rem] p-8 shadow-sm">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
+                  <Medal className="w-5 h-5 text-yellow-600" />
+                </div>
+                <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">Your Badges</h3>
+              </div>
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                {stats.badges.length} / {BADGES_LIST.length} Unlocked
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              {BADGES_LIST.map(badge => {
+                const isUnlocked = stats.badges.some(b => b.id === badge.id);
+                return (
+                  <div 
+                    key={badge.id}
+                    className={`flex flex-col items-center text-center p-4 rounded-3xl border-2 transition-all ${
+                      isUnlocked 
+                        ? 'bg-white dark:bg-gray-800 border-yellow-100 dark:border-yellow-900/30' 
+                        : 'bg-gray-50 dark:bg-gray-900/50 border-transparent opacity-40 grayscale'
+                    }`}
+                  >
+                    <div className={`text-3xl mb-2 ${isUnlocked ? 'animate-bounce-subtle' : ''}`}>
+                      {badge.icon}
+                    </div>
+                    <h4 className="text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-tight leading-tight mb-1">
+                      {badge.title}
+                    </h4>
+                    <p className="text-[8px] font-bold text-gray-400 dark:text-gray-500 uppercase leading-tight">
+                      {badge.description}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Milestones Modal */}

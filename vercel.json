@@ -8,10 +8,7 @@
     {
       "src": "package.json",
       "use": "@vercel/static-build",
-      "config": { 
-        "distDir": "dist",
-        "installCommand": "npm install --include=optional"
-      }
+      "config": { "distDir": "dist" }
     }
   ],
   "rewrites": [

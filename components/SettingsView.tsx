@@ -53,7 +53,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
       streak: 0,
       completedLessons: [],
       currentTool: 'Excel',
-      hasTakenPreTest: false
+      hasTakenPreTest: false,
+      isBeginnerMode: true,
+      badges: []
     };
     setStats(freshStats);
     setShowConfirmReset(false);
@@ -136,6 +138,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ stats, setStats, isD
               description="Keep your streak alive with gentle push notifications."
             >
               <Toggle active={remindersEnabled} onToggle={() => setRemindersEnabled(!remindersEnabled)} />
+            </SettingRow>
+            <SettingRow 
+              icon={Type} 
+              label="Beginner Mode" 
+              description="Show more detailed explanations and slower-paced learning."
+            >
+              <Toggle 
+                active={stats.isBeginnerMode} 
+                onToggle={() => {
+                  const updated = { ...stats, isBeginnerMode: !stats.isBeginnerMode };
+                  setStats(updated);
+                  localStorage.setItem('quickoffice_stats', JSON.stringify(updated));
+                }} 
+              />
             </SettingRow>
           </div>
         </MotionDiv>

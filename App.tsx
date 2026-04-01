@@ -9,20 +9,22 @@ import { SettingsView } from '@/components/SettingsView';
 import { AuthModal } from '@/components/AuthModal';
 import { AdminPanel } from '@/components/AdminPanel';
 import { Dashboard } from '@/components/Dashboard';
+import { StudentDashboard } from '@/components/StudentDashboard';
 import { LearnSidePanel } from '@/components/LearnSidePanel';
 import { Guidebook } from '@/components/Guidebook';
 import { QuickOfficeLogo } from '@/components/Logo';
-import { UserStats, OfficeTool, Lesson, User } from './types';
-import { INITIAL_LESSONS, TOOLS_CONFIG } from './constants';
+import { UserStats, OfficeTool, Lesson, User, Badge } from './types';
+import { INITIAL_LESSONS, TOOLS_CONFIG, BADGES_LIST } from './constants';
 import { Map as MapIcon, BookOpen, Database as DbIcon, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { api } from './services/api';
+import { QuickHelp } from './components/QuickHelp';
 
 const MotionDiv = motion.div as any;
 const MotionButton = motion.button as any;
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('learn');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [activeTool, setActiveTool] = useState<OfficeTool>('Excel');
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [isGuidebookOpen, setIsGuidebookOpen] = useState(false);
@@ -31,6 +33,7 @@ const App: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [customLessons, setCustomLessons] = useState<Lesson[]>([]);
   const [dbConnected, setDbConnected] = useState<boolean | null>(null);
+  const [dbError, setDbError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('quickoffice_theme') === 'dark';
@@ -48,6 +51,8 @@ const App: React.FC = () => {
       completedLessons: [],
       currentTool: 'Excel',
       hasTakenPreTest: false,
+      isBeginnerMode: true,
+      badges: [],
       lastFreeRestores: {}
     };
     return saved ? { ...defaultStats, ...JSON.parse(saved) } : defaultStats;
@@ -57,8 +62,11 @@ const App: React.FC = () => {
   useEffect(() => {
     const initData = async () => {
       // Check DB Health
-      const isHealthy = await api.checkHealth();
-      setDbConnected(isHealthy);
+      const health = await api.checkHealth();
+      setDbConnected(health.ok);
+      if (!health.ok) {
+        setDbError(health.message || 'Database connection failed');
+      }
 
       // Restore User
       const savedUser = localStorage.getItem('quickoffice_user');
@@ -67,7 +75,7 @@ const App: React.FC = () => {
         setCurrentUser(user);
         
         // If DB is up, get fresh stats and lessons
-        if (isHealthy) {
+        if (health.ok) {
           try {
             const dbStats = await api.getStats(user.id);
             if (dbStats) setStats(dbStats);
@@ -81,11 +89,11 @@ const App: React.FC = () => {
       }
 
       // Local fallback for lessons
-      if (!isHealthy) {
+      if (!health.ok) {
         const savedLessons = JSON.parse(localStorage.getItem('quickoffice_custom_lessons') || '[]');
         setCustomLessons(savedLessons);
       }
-
+      
       // Ensure splash screen shows for at least 2 seconds for smooth transition
       await new Promise(resolve => setTimeout(resolve, 2000));
       
@@ -108,7 +116,7 @@ const App: React.FC = () => {
   const handleLogin = (user: User) => {
     setCurrentUser(user);
     localStorage.setItem('quickoffice_user', JSON.stringify(user));
-    setActiveTab('learn');
+    setActiveTab('dashboard');
     setIsAuthModalOpen(false);
   };
 
@@ -121,7 +129,7 @@ const App: React.FC = () => {
     setCurrentUser(null);
     localStorage.removeItem('quickoffice_user');
     localStorage.removeItem('quickoffice_token');
-    setActiveTab('learn');
+    setActiveTab('dashboard');
   };
 
   const handleAddTutorial = async (lesson: Lesson) => {
@@ -176,12 +184,10 @@ const App: React.FC = () => {
   const allLessons = [...INITIAL_LESSONS, ...customLessons];
   const toolLessons = allLessons.filter(l => l.tool === activeTool);
 
-  const handleLessonComplete = async (xp: number) => {
+  const handleLessonComplete = async (xp: number, accuracy?: number) => {
     if (activeLesson) {
       const today = new Date().toDateString();
       const yesterday = new Date(Date.now() - 86400000).toDateString();
-      
-      let newStats: UserStats;
       
       setStats(prev => {
         let newStreak = prev.streak;
@@ -194,15 +200,57 @@ const App: React.FC = () => {
           }
         }
 
-        const updated = {
+        const newCompletedLessons = [...new Set([...prev.completedLessons, activeLesson.id])];
+        const newXp = prev.xp + xp;
+        
+        // Check for new badges
+        const newBadges: Badge[] = [...(prev.badges || [])];
+        BADGES_LIST.forEach(badge => {
+          if (newBadges.some(b => b.id === badge.id)) return;
+          
+          let unlocked = false;
+          if (badge.id === 'b1') { // Excel Beginner
+            const excelCount = newCompletedLessons.filter(id => INITIAL_LESSONS.find(l => l.id === id)?.tool === 'Excel').length;
+            if (excelCount >= 3) unlocked = true;
+          } else if (badge.id === 'b2') { // Word Wizard
+            const wordCount = newCompletedLessons.filter(id => INITIAL_LESSONS.find(l => l.id === id)?.tool === 'Word').length;
+            if (wordCount >= 3) unlocked = true;
+          } else if (badge.id === 'b3') { // PowerPoint Pro
+            const ppCount = newCompletedLessons.filter(id => INITIAL_LESSONS.find(l => l.id === id)?.tool === 'PowerPoint').length;
+            if (ppCount >= 3) unlocked = true;
+          } else if (badge.id === 'b4') { // Streak Master
+            if (newStreak >= 7) unlocked = true;
+          } else if (badge.id === 'b5') { // XP Millionaire
+            if (newXp >= 1000) unlocked = true;
+          } else if (badge.id === 'b6') { // Challenge Conqueror
+            const challengeCount = newCompletedLessons.filter(id => allLessons.find(l => l.id === id)?.isChallenge).length;
+            if (challengeCount >= 3) unlocked = true;
+          }
+          
+          if (unlocked) {
+            newBadges.push({
+              ...badge,
+              unlockedAt: new Date().toISOString()
+            });
+          }
+        });
+
+        const updated: UserStats = {
           ...prev,
-          xp: prev.xp + xp,
+          xp: newXp,
           streak: newStreak,
           lastCompletionDate: today,
-          completedLessons: [...new Set([...prev.completedLessons, activeLesson.id])],
+          completedLessons: newCompletedLessons,
+          badges: newBadges,
+          lastQuizResult: accuracy !== undefined ? {
+            lessonId: activeLesson.id,
+            lessonTitle: activeLesson.title,
+            accuracy,
+            xpEarned: xp,
+            date: new Date().toISOString()
+          } : prev.lastQuizResult
         };
         
-        newStats = updated;
         localStorage.setItem('quickoffice_stats', JSON.stringify(updated));
         
         // Async update to DB
@@ -306,7 +354,7 @@ const App: React.FC = () => {
 
   const learnClasses = "lg:ml-64 p-4 sm:p-6 lg:p-10 flex flex-col xl:flex-row gap-8 lg:gap-16 justify-center items-start";
   const otherClasses = "lg:ml-64 p-4 sm:p-6 lg:p-10";
-  const mainClasses = `relative z-10 flex-1 ${activeTab === 'learn' ? learnClasses : otherClasses} overflow-x-hidden pb-32 lg:pb-10 min-h-screen transition-colors duration-300 bg-white dark:bg-gray-950`;
+  const mainClasses = `relative z-10 flex-1 ${['learn', 'dashboard'].includes(activeTab) ? learnClasses : otherClasses} overflow-x-hidden pb-32 lg:pb-10 min-h-screen transition-colors duration-300 bg-white dark:bg-gray-950`;
 
   return (
     <div className={`min-h-screen bg-white dark:bg-gray-950 flex flex-col lg:flex-row selection:bg-blue-100 dark:selection:bg-blue-900 relative overflow-hidden ${isDarkMode ? 'dark' : ''}`}>
@@ -320,14 +368,57 @@ const App: React.FC = () => {
       />
       
       {/* DB Sync Indicator (Overlay) */}
-      {dbConnected === false && activeTab === 'learn' && (
-        <div className="fixed bottom-24 right-8 lg:bottom-8 lg:right-8 z-50 bg-red-500 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl animate-pulse">
-          <AlertCircle size={16} />
-          <span className="text-[10px] font-black uppercase tracking-widest">Offline Mode: Postgres Disconnected</span>
+      {dbConnected === false && ['learn', 'dashboard'].includes(activeTab) && (
+        <div className="fixed bottom-24 right-8 lg:bottom-8 lg:right-8 z-50 bg-red-500 text-white px-4 py-3 rounded-2xl flex flex-col gap-1 shadow-2xl animate-pulse max-w-xs">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={16} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Offline Mode: Postgres Disconnected</span>
+          </div>
+          {dbError && <p className="text-[9px] font-bold opacity-80 leading-tight">{dbError}</p>}
         </div>
       )}
 
       <main className={mainClasses}>
+        {activeTab === 'dashboard' && currentUser && (
+          <StudentDashboard 
+            user={currentUser} 
+            stats={stats} 
+            onNavigate={setActiveTab}
+            onStartLesson={(lessonId) => {
+              const lesson = allLessons.find(l => l.id === lessonId);
+              if (lesson) {
+                setActiveTool(lesson.tool);
+                setActiveLesson(lesson);
+              }
+            }}
+            onStartChallenge={(challengeId) => {
+              // Map challenges to specific lessons for now
+              const challengeMap: Record<string, string> = {
+                'c1': 'w1', // Resume -> Word Foundations
+                'c2': 'e1', // Budget -> Excel Foundations
+                'c3': 'p1'  // Pitch Deck -> PPT Foundations
+              };
+              const lessonId = challengeMap[challengeId];
+              const lesson = allLessons.find(l => l.id === lessonId);
+              if (lesson) {
+                setActiveTool(lesson.tool);
+                // Mark as challenge for special UI/Rewards
+                setActiveLesson({ ...lesson, isChallenge: true, xpReward: lesson.xpReward * 2 });
+              }
+            }}
+            onToggleBeginnerMode={(enabled) => {
+              setStats(prev => {
+                const updated = { ...prev, isBeginnerMode: enabled };
+                localStorage.setItem('quickoffice_stats', JSON.stringify(updated));
+                if (dbConnected && currentUser) {
+                  api.updateStats(currentUser.id, updated).catch(console.error);
+                }
+                return updated;
+              });
+            }}
+          />
+        )}
+
         {activeTab === 'learn' && (
           <>
             <div className="w-full max-w-xl flex flex-col items-center">
@@ -399,6 +490,7 @@ const App: React.FC = () => {
         {activeLesson && (
           <LessonEngine 
             lesson={activeLesson} 
+            stats={stats}
             canRestore={canUseFreeRestore(activeLesson.tool)}
             onRestore={() => handleUseFreeRestore(activeLesson.tool)}
             onComplete={handleLessonComplete} 
@@ -412,6 +504,8 @@ const App: React.FC = () => {
         onClose={() => setIsGuidebookOpen(false)} 
         tool={activeTool} 
       />
+      
+      <QuickHelp />
     </div>
   );
 };

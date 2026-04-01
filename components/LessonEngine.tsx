@@ -1,23 +1,27 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Lesson, Question, QuestionType, Difficulty } from '@/types';
-import { CheckCircle2, XCircle, Loader2, Trophy, Sparkles, BookOpen, ChevronRight, Lightbulb, Clock, Heart, AlertCircle, RotateCcw, MousePointer2, RefreshCw, Layers, Monitor, ChevronLeft, GripVertical, Check, Info, ArrowRight, Star, Play, LogOut } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, Trophy, Sparkles, BookOpen, ChevronRight, Lightbulb, Clock, Heart, AlertCircle, RotateCcw, MousePointer2, RefreshCw, Layers, Monitor, ChevronLeft, GripVertical, Check, Info, ArrowRight, Star, Play, LogOut, Zap } from 'lucide-react';
 import { motion, AnimatePresence, Reorder } from 'motion/react';
+import { QuizResultDashboard } from './QuizResultDashboard';
+import { QUICK_TIPS } from '@/constants';
+import { UserStats } from '@/types';
 
 const MotionDiv = motion.div as any;
 const MotionButton = motion.button as any;
 
 interface LessonEngineProps {
   lesson: Lesson;
+  stats: UserStats;
   canRestore: boolean;
   onRestore: () => void;
-  onComplete: (xp: number) => void;
+  onComplete: (xp: number, accuracy?: number) => void;
   onQuit: () => void;
 }
 
 type EnginePhase = 'quiz1' | 'review' | 'quiz2' | 'wrongReviewIntro' | 'wrongReview' | 'completed';
 
-export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, onRestore, onComplete, onQuit }) => {
+export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, stats, canRestore, onRestore, onComplete, onQuit }) => {
   const [shuffledQuestions, setShuffledQuestions] = useState<Question[]>([]);
   const [shuffledSkills, setShuffledSkills] = useState<Question[]>([]);
   const [missedQuestions, setMissedQuestions] = useState<Question[]>([]);
@@ -32,8 +36,22 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
   const [hearts, setHearts] = useState(5);
   const [isGameOver, setIsGameOver] = useState(false);
   const [showQuitConfirmation, setShowQuitConfirmation] = useState(false);
+  const [currentTip, setCurrentTip] = useState<string | null>(null);
+  const [showHint, setShowHint] = useState(false);
+
+  // Show a random tip every 45 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const randomTip = QUICK_TIPS[Math.floor(Math.random() * QUICK_TIPS.length)];
+      setCurrentTip(randomTip);
+      setTimeout(() => setCurrentTip(null), 8000); // Hide after 8s
+    }, 45000);
+    return () => clearInterval(interval);
+  }, []);
   const [wrongAnswersHistory, setWrongAnswersHistory] = useState<Record<string, string[]>>({});
   const [isTimeUp, setIsTimeUp] = useState(false);
+  const [startTime] = useState(Date.now());
+  const [correctCount, setCorrectCount] = useState(0);
   
   const [hasInteractedWithVideo, setHasInteractedWithVideo] = useState(false);
 
@@ -52,21 +70,22 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
 
   // Phase change logic - reset hearts and prepare data
   useEffect(() => {
+    const isChallenge = lesson.isChallenge;
     if (phase === 'quiz1') {
-      const qSelected = prepareQuizPool(lesson.questions, 15);
+      const qSelected = prepareQuizPool(lesson.questions, isChallenge ? 20 : 15);
       setShuffledQuestions(qSelected);
       setCurrentIndex(0);
-      setHearts(5); // Reset hearts for Phase 1
-      setSeconds(getInitialTime('quiz1'));
+      setHearts(isChallenge ? 3 : 5); // Challenges have fewer hearts
+      setSeconds(getInitialTime('quiz1') * (isChallenge ? 0.8 : 1)); // Challenges have less time
       setWrongAnswersHistory({});
       setIsTimeUp(false);
     }
     if (phase === 'quiz2') {
-      const sSelected = prepareQuizPool(lesson.performanceSteps, 15);
+      const sSelected = prepareQuizPool(lesson.performanceSteps, isChallenge ? 10 : 5);
       setShuffledSkills(sSelected);
       setCurrentIndex(0);
-      setHearts(3); // Quiz 2 is harder: Reset hearts to 3 instead of 5
-      setSeconds(getInitialTime('quiz2'));
+      setHearts(isChallenge ? 2 : 3); // Quiz 2 is harder in challenge mode
+      setSeconds(getInitialTime('quiz2') * (isChallenge ? 0.8 : 1));
       setIsTimeUp(false);
     }
     if (phase === 'wrongReview') {
@@ -142,6 +161,8 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
       }
       
       if (newHearts <= 0) setIsGameOver(true);
+    } else {
+      setCorrectCount(prev => prev + 1);
     }
 
     setFeedback({ 
@@ -195,23 +216,19 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
   };
 
   if (phase === 'completed') {
+    const totalQuestions = shuffledQuestions.length + shuffledSkills.length;
+    const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+
     return (
-      <MotionDiv initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 bg-white dark:bg-gray-950 z-[100] flex flex-col items-center justify-center p-6 text-center">
-        <MotionDiv initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center mb-6 shadow-xl ring-4 ring-yellow-50">
-          <Trophy className="w-12 h-12 text-white" />
-        </MotionDiv>
-        <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">Mastery Achieved!</h2>
-        <p className="text-gray-500 dark:text-gray-400 mb-8 font-bold text-sm">You passed all phases and corrected all mistakes for <br/> <span className="text-blue-600">"{lesson.title}"</span>.</p>
-        <div className="flex gap-4 mb-10">
-           <div className="bg-blue-50 dark:bg-blue-900/20 px-8 py-3 rounded-2xl border-2 border-blue-100 shadow-sm">
-              <p className="text-[9px] font-black uppercase text-blue-400 tracking-widest">XP Bonus</p>
-              <p className="text-2xl font-black text-blue-600">+{lesson.xpReward}</p>
-           </div>
-        </div>
-        <MotionButton whileTap={{ scale: 0.95 }} onClick={() => onComplete(lesson.xpReward)} className="w-full max-w-sm py-4 bg-green-500 text-white rounded-2xl font-black text-lg shadow-[0_5px_0_0_#15803d]">
-          FINISH LESSON
-        </MotionButton>
-      </MotionDiv>
+      <QuizResultDashboard 
+        lesson={lesson}
+        xpEarned={lesson.xpReward}
+        correctCount={correctCount}
+        totalCount={totalQuestions}
+        timeSpent={timeSpent}
+        missedQuestions={missedQuestions}
+        onFinish={() => onComplete(lesson.xpReward)}
+      />
     );
   }
 
@@ -384,6 +401,13 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
 
   return (
     <MotionDiv initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed inset-0 bg-white dark:bg-gray-950 z-50 flex flex-col">
+      {/* Challenge Banner */}
+      {lesson.isChallenge && (
+        <div className="bg-amber-500 text-white py-1.5 text-center text-[10px] font-black uppercase tracking-[0.3em] shadow-md z-10">
+          🔥 Challenge Mode Active: 2x XP Rewards 🔥
+        </div>
+      )}
+
       {/* Header */}
       <div className="max-w-5xl mx-auto w-full p-4 flex items-center gap-4">
         <button onClick={() => setShowQuitConfirmation(true)} className="p-2 text-gray-300 hover:text-gray-500 transition-colors"><ChevronLeft size={28} /></button>
@@ -432,6 +456,30 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
                           </span>
                        </div>
                        <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight">{currentQuestion.prompt}</h2>
+                       
+                       {stats.isBeginnerMode && (
+                         <div className="flex justify-center mt-2">
+                           <button 
+                             onClick={() => setShowHint(!showHint)}
+                             className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-100 dark:border-amber-900/40 hover:bg-amber-100 transition-colors"
+                           >
+                             <Lightbulb size={12} /> {showHint ? 'Hide Hint' : 'Get a Hint'}
+                           </button>
+                         </div>
+                       )}
+
+                       {showHint && stats.isBeginnerMode && (
+                         <MotionDiv 
+                           initial={{ opacity: 0, height: 0 }}
+                           animate={{ opacity: 1, height: 'auto' }}
+                           className="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/20 text-left mt-4"
+                         >
+                           <p className="text-xs font-bold text-amber-800 dark:text-amber-300 leading-relaxed">
+                             💡 <span className="italic">Beginner Tip:</span> {currentQuestion.explanation.split('.')[0]}. Try to visualize the steps in the {currentQuestion.tool || lesson.tool} interface!
+                           </p>
+                         </MotionDiv>
+                       )}
+
                        <div className="flex justify-center gap-3">
                           {currentQuestion.category && (
                              <div className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-[9px] font-black uppercase tracking-widest text-gray-400">
@@ -523,6 +571,31 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
         </div>
       </div>
 
+      {/* Quick Tip Pop-up */}
+      <AnimatePresence>
+        {currentTip && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[60] w-[90%] max-w-md"
+          >
+            <div className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-4 rounded-2xl shadow-2xl border-2 border-blue-500 flex items-center gap-4">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shrink-0">
+                <Sparkles size={20} className="text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-0.5">Quick Tip</p>
+                <p className="text-xs font-bold leading-tight">{currentTip}</p>
+              </div>
+              <button onClick={() => setCurrentTip(null)} className="p-1 hover:bg-white/10 rounded-lg">
+                <XCircle size={16} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showQuitConfirmation && (
           <MotionDiv 
@@ -568,6 +641,21 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
       }`}>
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex-1">
+            {stats?.isBeginnerMode && !feedback && !isTimeUp && currentQuestion && (
+              <MotionDiv 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl"
+              >
+                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
+                  <Info size={14} />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Beginner Mode: Hint</span>
+                </div>
+                <p className="text-xs font-bold text-blue-800 dark:text-blue-300 leading-relaxed">
+                  {currentQuestion.explanation}
+                </p>
+              </MotionDiv>
+            )}
             {feedback ? (
               <div className="flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shrink-0 ${feedback.isCorrect ? 'bg-green-500' : 'bg-red-500'}`}>
@@ -589,9 +677,14 @@ export const LessonEngine: React.FC<LessonEngineProps> = ({ lesson, canRestore, 
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500">
-                <Info size={14} />
-                <p className="text-[10px] font-black uppercase tracking-widest">Tip: Earn XP by completing all phases of this lesson!</p>
+              <div className="flex items-center gap-3 text-gray-400 dark:text-gray-500">
+                <div className="p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400">
+                  <Zap size={14} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400">Quick Tip</p>
+                  <p className="text-xs font-bold text-gray-600 dark:text-gray-400">{currentTip}</p>
+                </div>
               </div>
             )}
           </div>

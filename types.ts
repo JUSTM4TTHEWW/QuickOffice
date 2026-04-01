@@ -50,6 +50,7 @@ export interface Lesson {
   performanceSteps: Question[]; // Quiz 2: Skill Pool
   xpReward: number;
   stageTitle?: string;
+  isChallenge?: boolean;
   tutorialContent: {
     title: string;
     points: string[];
@@ -58,12 +59,30 @@ export interface Lesson {
   };
 }
 
+export interface Badge {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  unlockedAt: string;
+  tool?: string;
+}
+
 export interface UserStats {
   xp: number;
   streak: number;
   completedLessons: string[];
   currentTool: OfficeTool;
   hasTakenPreTest: boolean;
+  isBeginnerMode: boolean;
+  badges: Badge[];
   lastCompletionDate?: string;
   lastFreeRestores?: Record<string, string>;
+  lastQuizResult?: {
+    lessonId: string;
+    lessonTitle: string;
+    accuracy: number;
+    xpEarned: number;
+    date: string;
+  };
 }
